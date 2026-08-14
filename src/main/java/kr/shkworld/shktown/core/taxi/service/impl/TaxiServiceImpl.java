@@ -1,7 +1,8 @@
-package kr.shkworld.shktown.core.taxi.service;
+package kr.shkworld.shktown.core.taxi.service.impl;
 
 import kr.shkworld.shktown.core.taxi.model.Position;
 import kr.shkworld.shktown.core.taxi.model.TaxiStop;
+import kr.shkworld.shktown.core.taxi.service.TaxiService;
 
 import java.util.HashMap;
 import java.util.Map;

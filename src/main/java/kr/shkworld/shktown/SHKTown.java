@@ -5,7 +5,7 @@ import kr.shkworld.shktown.config.GlobalConfigLoader;
 import kr.shkworld.shktown.config.SmartphoneConfigLoader;
 import kr.shkworld.shktown.config.TaxiConfigLoader;
 import kr.shkworld.shktown.core.taxi.service.TaxiService;
-import kr.shkworld.shktown.core.taxi.service.TaxiServiceImpl;
+import kr.shkworld.shktown.core.taxi.service.impl.TaxiServiceImpl;
 import kr.shkworld.shktown.listener.EventManager;
 import kr.shkworld.shktown.ui.apps.SmartphoneManager;
 import kr.shkworld.shktown.ui.apps.taxi.TaxiMapManager;

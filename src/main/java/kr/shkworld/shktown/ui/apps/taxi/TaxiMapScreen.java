@@ -9,7 +9,6 @@ import kr.shkworld.shktown.ui.SmartphoneScreen;
 import kr.shkworld.shktown.util.GUIUtil;
 import kr.shkworld.shktown.util.LocationUtil;
 import kr.shkworld.shktown.util.MessageUtil;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,8 +17,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
-
-import java.time.Duration;
 
 public class TaxiMapScreen implements SmartphoneScreen {
     private final SHKTown plugin;
