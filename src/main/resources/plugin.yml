@@ -1,0 +1,8 @@
+name: SHKTown
+version: 1.0
+main: kr.shkworld.shktown.SHKTown
+api-version: 1.21
+
+commands:
+  shktown:
+    usage: "/shktown reload"
