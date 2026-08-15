@@ -43,7 +43,7 @@ public class SmartphoneMainScreen implements SmartphoneScreen {
 
         ItemStack profileCard = GUIUtil.createPlayerHead(
                 player,
-                "§6§l" + player.getName() + " §f님의 스마트폰",
+                "§6" + player.getName() + " §f님의 스마트폰",
                 "§7--------------------",
                 "§a 소속 직급 §f: 시민",
                 "§6 보유 현금 §f: 0 원",
@@ -56,7 +56,7 @@ public class SmartphoneMainScreen implements SmartphoneScreen {
             appItems.forEach(inventory::setItem);
         }
 
-        inventory.setItem(49, GUIUtil.createItem(Material.COMPASS, "§c§lHOME", "§7스마트폰 메인 화면으로 복귀합니다."));
+        inventory.setItem(49, GUIUtil.createItem(Material.COMPASS, "§cHOME", "§7스마트폰 메인 화면으로 복귀합니다."));
     }
 
     @Override

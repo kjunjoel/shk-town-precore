@@ -22,7 +22,7 @@ public class NavigationConfigLoader {
         ConfigurationSection settings = config.getConfigurationSection("settings");
         String title = settings != null ? settings.getString("title", "") : "";
         String betterhudPointerId = settings != null ? settings.getString("better_hud_pointer_id", "") : "";
-        double arrivedRadius = settings != null ? settings.getDouble("arrived_radius", 0.0) : 0.0;
+        double arrivalRadius = settings != null ? settings.getDouble("arrival_radius", 0.0) : 0.0;
         int updateIntervalTicks = settings != null ? settings.getInt("update_interval_ticks", 0) : 0;
 
         ConfigurationSection messages = config.getConfigurationSection("messages");
@@ -33,7 +33,7 @@ public class NavigationConfigLoader {
         String differentWorld =  messages != null ? messages.getString("different_world", "") : "";
 
         return new NavigationConfig(
-                title, betterhudPointerId, arrivedRadius, updateIntervalTicks,
+                title, betterhudPointerId, arrivalRadius, updateIntervalTicks,
                 useGlobalPrefix, started, stopped, arrived, differentWorld
         );
     }

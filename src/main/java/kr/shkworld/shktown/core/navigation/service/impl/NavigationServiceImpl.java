@@ -51,7 +51,7 @@ public class NavigationServiceImpl implements NavigationService {
             return false;
         }
 
-        double radiusSquared = navigationConfig.arrivedRadius() * navigationConfig.arrivedRadius();
+        double radiusSquared = navigationConfig.arrivalRadius() * navigationConfig.arrivalRadius();
         return current.distanceSquared(destination) <= radiusSquared;
     }
 

@@ -85,7 +85,7 @@ public class TaxiConfigLoader {
         if (config == null || mapManager == null) return;
         mapManager.clearMaps();
 
-        ConfigurationSection mapsSection = config.getConfigurationSection("taxi.maps");
+        ConfigurationSection mapsSection = config.getConfigurationSection("maps");
         if (mapsSection == null) {
             return;
         }
@@ -96,7 +96,6 @@ public class TaxiConfigLoader {
 
             String title = mapSection.getString("title", "");
 
-            // 네비게이션 매핑
             Map<String, String> navigation = new HashMap<>();
             ConfigurationSection navSec = mapSection.getConfigurationSection("navigation");
             if (navSec != null) {
@@ -105,7 +104,6 @@ public class TaxiConfigLoader {
                 }
             }
 
-            // 정류장 핀 매핑 (Position DTO 적용)
             Map<Integer, TaxiStop> stops = new HashMap<>();
             ConfigurationSection stopsSec = mapSection.getConfigurationSection("stops");
             if (stopsSec != null) {

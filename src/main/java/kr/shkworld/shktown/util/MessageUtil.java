@@ -3,6 +3,7 @@ package kr.shkworld.shktown.util;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -66,6 +67,12 @@ public class MessageUtil {
 
         Title titleObject = Title.title(main, sub, times);
         player.showTitle(titleObject);
+    }
+
+    public static String serializePlainText(Component component) {
+        if (component == null) return "";
+        String plain = PlainTextComponentSerializer.plainText().serialize(component).trim();
+        return stripColor(plain).trim();
     }
 
     public static String stripColor(String text) {

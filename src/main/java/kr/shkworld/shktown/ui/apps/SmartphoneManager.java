@@ -1,7 +1,6 @@
 package kr.shkworld.shktown.ui.apps;
 
 import kr.shkworld.shktown.SHKTown;
-import kr.shkworld.shktown.ui.apps.navigation.NavigationScreen;
 import kr.shkworld.shktown.util.MessageUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -37,8 +36,7 @@ public class SmartphoneManager {
         appActions.put(31, player -> {
             player.closeInventory();
 
-            NavigationScreen navigationScreen = new NavigationScreen(plugin, player);
-            player.openInventory(navigationScreen.getInventory());
+            plugin.getNavigationManager().openScreen(player);
         });
     }
 

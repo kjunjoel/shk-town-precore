@@ -45,7 +45,7 @@ public class TaxiMapScreen implements SmartphoneScreen {
     }
 
     private void initLayout() {
-        inventory.setItem(49, GUIUtil.createItem(Material.COMPASS, "§c§lHOME", "§7스마트폰 메인 화면으로 복귀합니다."));
+        inventory.setItem(49, GUIUtil.createItem(Material.COMPASS, "§cHOME", "§7스마트폰 메인 화면으로 복귀합니다."));
 
         NAVI_MAP.forEach((dir, info) -> {
             if (taxiMap.navigation().containsKey(dir)) {

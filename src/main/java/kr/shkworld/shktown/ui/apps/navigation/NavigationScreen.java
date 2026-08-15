@@ -89,13 +89,22 @@ public class NavigationScreen implements SmartphoneScreen {
 
             int slot = CONTENT_SLOTS[i - startIndex];
 
-            double distance = playerPosition.distance(destPos);
+            boolean isSameWorld = playerLocation.getWorld() != null
+                    && playerLocation.getWorld().getName().equalsIgnoreCase(destPos.world());
+
+            String distanceText;
+            if (isSameWorld) {
+                double distance = playerPosition.distance(destPos);
+                distanceText = String.format("&f거리: &b%.1fm", distance);
+            } else {
+                distanceText = "&f거리: &c다른 월드 (&e" + destPos.world() + "&c)";
+            }
 
             ItemStack compass = GUIUtil.createItem(Material.COMPASS,
-                    "&b&l" + destName,
+                    "&b" + destName,
                     null,
                     String.format("&f좌표: &7X %.0f, Y: %.0f, Z: %.0f", destPos.x(), destPos.y(), destPos.z()),
-                    String.format("&f거리: &b%.1fm", distance),
+                    distanceText,
                     "&f",
                     "&e클릭하여 길 안내 시작"
             );
@@ -111,24 +120,24 @@ public class NavigationScreen implements SmartphoneScreen {
         }
 
         inventory.setItem(48, GUIUtil.createItem(Material.HOPPER,
-                "&d&l정렬 방식 설정",
+                "&d정렬 방식 설정",
                 null,
                 "&f현재: &e" + sortType.getDisplayName(),
                 "&f",
                 "&e클릭 시 다음 정렬 방식으로 변경")
         );
 
-        inventory.setItem(49, GUIUtil.createItem(Material.COMPASS, "§c§lHOME", "§7스마트폰 메인 화면으로 복귀합니다."));
+        inventory.setItem(49, GUIUtil.createItem(Material.COMPASS, "§cHOME", "§7스마트폰 메인 화면으로 복귀합니다."));
 
         inventory.setItem(50, GUIUtil.createItem(Material.SPYGLASS,
-                "&b&l목적지 검색",
+                "&b목적지 검색",
                 null,
                 "&e좌클릭하여 검색어 입력",
                 "&c우클릭하여 검색어 초기화")
         );
 
         inventory.setItem(52, GUIUtil.createItem(Material.BARRIER,
-                "&c&l길 안내 중지",
+                "&c길 안내 중지",
                 null,
                 "&f현재 진행 중인 길 안내를 종료합니다.")
         );
@@ -152,12 +161,17 @@ public class NavigationScreen implements SmartphoneScreen {
         NavigationManager navigationManager = plugin.getNavigationManager();
 
         if (slot == 45 && currentPage > 0) {
-            currentPage--;
-            refresh();
-            return;
+            ItemStack item = inventory.getItem(slot);
+            if (item == null || item.getType() == Material.ARROW) {
+                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
+                currentPage--;
+                refresh();
+                return;
+            }
         }
 
         if (slot == 48) {
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             sortType = sortType.next();
             refresh();
             return;
@@ -176,6 +190,7 @@ public class NavigationScreen implements SmartphoneScreen {
         }
 
         if (slot == 52) {
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             if (navigationManager.isNavigating(player)) {
                 navigationManager.stopNavigation(player, false);
                 refresh();
@@ -186,21 +201,33 @@ public class NavigationScreen implements SmartphoneScreen {
         }
 
         if (slot == 53) {
-            currentPage++;
-            refresh();
-            return;
+            ItemStack item = inventory.getItem(slot);
+            if (item == null || item.getType() == Material.ARROW) {
+                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
+                currentPage++;
+                refresh();
+                return;
+            }
         }
 
         for (int contentSlot : CONTENT_SLOTS) {
             if (slot == contentSlot) {
                 ItemStack item = inventory.getItem(slot);
                 if (item != null && item.getType() == Material.COMPASS && item.hasItemMeta()) {
-                    String rawName = String.valueOf(item.getItemMeta().displayName());
+                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
+                    String rawName = MessageUtil.serializePlainText(item.getItemMeta().displayName());
                     String destName = MessageUtil.stripColor(rawName).trim();
 
                     Position destPos = navigationService.getDestination(destName);
                     if (destPos != null) {
                         Location destLoc = LocationUtil.toLocation(destPos);
+
+                        if (destLoc.getWorld() == null || !player.getWorld().equals(destLoc.getWorld())) {
+                            MessageUtil.send(player, navigationService.getConfig().differentWorld(), false);
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_GUITAR, 1f, 2f);
+                            return;
+                        }
+
                         navigationManager.startNavigation(player, destName, destLoc);
                         player.closeInventory();
                     }

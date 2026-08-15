@@ -38,6 +38,8 @@ public class SHKTown extends JavaPlugin {
         this.configManager = new ConfigManager(this);
         this.serviceRegistry = AppInitializer.initServiceRegistry(this);
 
+        reload();
+
         new EventManager(this).registerEvents();
         new CommandManager(this).registerCommands();
 

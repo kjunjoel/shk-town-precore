@@ -21,8 +21,9 @@ public enum NavigationDirection {
     }
 
     public static NavigationDirection calculate(Position from, Position to, double heightThreshold) {
-        double yDiff = to.y() - from.y();
+        if (from == null || to == null) return FORWARD;
 
+        double yDiff = to.y() - from.y();
         if (yDiff >= heightThreshold) {
             return UP;
         } else if (yDiff <= -heightThreshold) {
@@ -34,7 +35,14 @@ public enum NavigationDirection {
 
         double targetYaw = Math.toDegrees(Math.atan2(-dx, dz));
 
-        double relativeAngle = (targetYaw - from.yaw()) % 360;
+        double relativeAngle = targetYaw - from.yaw();
+
+        relativeAngle = (relativeAngle + 180) % 360;
+        if (relativeAngle < 0) {
+            relativeAngle += 360;
+        }
+        relativeAngle -= 180;
+
         if (relativeAngle < -180) relativeAngle += 360;
         if (relativeAngle > 180) relativeAngle -= 360;
 

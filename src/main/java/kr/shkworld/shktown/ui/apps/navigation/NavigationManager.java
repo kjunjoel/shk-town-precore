@@ -14,6 +14,7 @@ import kr.toxicity.hud.api.player.PointedLocation;
 import kr.toxicity.hud.api.player.PointedLocationSource;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -75,14 +76,14 @@ public class NavigationManager {
 
                 double distance = currentLocation.distance(destination);
 
-                if (distance <= config.arrivedRadius()) {
+                if (distance <= config.arrivalRadius()) {
                     stopNavigation(player, true);
                     return;
                 }
 
                 Position fromPos = LocationUtil.toPosition(currentLocation);
                 Position toPos = LocationUtil.toPosition(destination);
-                NavigationDirection dir = NavigationDirection.calculate(fromPos, toPos, 3.0);
+                NavigationDirection dir = NavigationDirection.calculate(fromPos, toPos, 10.0);
 
                 int distanceInt = (int) Math.round(distance);
                 String formattedActionBar = String.format("&b%s &f| %dm &f| &a%s", destinationName, distanceInt, dir.getText());
@@ -107,7 +108,7 @@ public class NavigationManager {
         return new PointedLocation(
                 PointedLocationSource.INTERNAL,
                 config.betterhudPointerId(),
-                "compass/point.png",
+                config.betterhudPointerId(),
                 locationWrapper
         );
     }
@@ -118,12 +119,15 @@ public class NavigationManager {
         NavigationSession session = activeSessions.get(uuid);
         boolean wasNavigation = stopNavigationInternal(player);
 
-        if (!wasNavigation || session == null) return;
+        if (!wasNavigation || session == null) {
+            return;
+        }
 
         NavigationConfig config = plugin.getNavigationService().getConfig();
 
         if (isArrived) {
             String arrivedMessage = config.arrived().replace("{destination}", session.name());
+            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
             MessageUtil.send(player, arrivedMessage, config.useGlobalPrefix());
             MessageUtil.sendTitle(player, "§a✔ 목적지 도착!", "§f" + session.name() + "에 도착했습니다.");
         } else {
@@ -134,21 +138,27 @@ public class NavigationManager {
     private boolean stopNavigationInternal(Player player) {
         UUID uuid = player.getUniqueId();
         NavigationConfig config = plugin.getNavigationService().getConfig();
-        boolean hadTask = activeTasks.containsKey(uuid);
 
-        BukkitTask task = activeTasks.get(uuid);
-        if (task != null) {
+        BukkitTask task = activeTasks.remove(uuid);
+        boolean hadTask = (task != null);
+
+        if (hadTask) {
             task.cancel();
         }
 
-        NavigationSession session = activeSessions.remove(uuid);
-        if (session != null && session.location() != null) {
-            try {
-                HudPlayer hudPlayer = BetterHudAPI.inst().getPlayerManager().getHudPlayer(uuid);
-                if (hudPlayer != null) {
-                    hudPlayer.getPointedLocation().removeIf(pt -> config.betterhudPointerId().equals(pt.name()));
-                }
-            } catch (Exception ignored) {}
+        activeSessions.remove(uuid);
+
+        try {
+            HudPlayer hudPlayer = BetterHudAPI.inst().getPlayerManager().getHudPlayer(uuid);
+            if (hudPlayer != null) {
+                hudPlayer.pointers().removeIf(pt -> config.betterhudPointerId().equalsIgnoreCase(pt.name()));
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("BetterHUD Pointer removal failed for " + player.getName() + ": " + e.getMessage());
+        }
+
+        if (player.isOnline()) {
+            player.sendActionBar(MessageUtil.parse(""));
         }
 
         return hadTask;
@@ -157,8 +167,7 @@ public class NavigationManager {
     private void spawnDestinationParticles(Player player, Location destination) {
         if (destination.getWorld() == null) return;
 
-        double startY = destination.getY();
-        for (double yOffset = startY; yOffset <= 10; yOffset += 0.5) {
+        for (double yOffset = 0; yOffset <= 10; yOffset += 0.5) {
             Location particleLocation = destination.clone().add(0, yOffset, 0);
 
             player.spawnParticle(
@@ -187,7 +196,13 @@ public class NavigationManager {
 
     public String getDestinationName(Player player) {
         if (player == null) return null;
-        return activeSessions.get(player.getUniqueId()).name();
+        NavigationSession session = activeSessions.get(player.getUniqueId());
+        return session != null ? session.name() : null;
+    }
+
+    public void openScreen(Player player) {
+        NavigationScreen navigationScreen = new NavigationScreen(plugin, player);
+        player.openInventory(navigationScreen.getInventory());
     }
 
     private record NavigationSession(String name, Location location) {}
