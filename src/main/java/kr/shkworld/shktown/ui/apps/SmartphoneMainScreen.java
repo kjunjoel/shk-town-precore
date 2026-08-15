@@ -3,10 +3,9 @@ package kr.shkworld.shktown.ui.apps;
 import kr.shkworld.shktown.ui.SmartphoneScreen;
 import kr.shkworld.shktown.util.GUIUtil;
 import kr.shkworld.shktown.util.MessageUtil;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -24,14 +23,14 @@ public class SmartphoneMainScreen implements SmartphoneScreen {
 
     public SmartphoneMainScreen(Player player, String title, Map<Integer, ItemStack> appItems, Map<Integer, Consumer<Player>> appActions) {
         this.appActions = appActions != null ? appActions : new HashMap<>();
-        this.inventory = Bukkit.createInventory(this, 54, LegacyComponentSerializer.legacySection().deserialize(title));
+        this.inventory = Bukkit.createInventory(this, 54, MessageUtil.parse(title));
 
         initLayout(player, appItems);
     }
 
     private void initLayout(Player player, Map<Integer, ItemStack> appItems) {
-        ItemStack bezel = GUIUtil.createItem(Material.GRAY_STAINED_GLASS_PANE, "", null);
-        ItemStack space = GUIUtil.createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "", null);
+        ItemStack bezel = GUIUtil.createItem(Material.GRAY_STAINED_GLASS_PANE, "&f", null);
+        ItemStack space = GUIUtil.createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "&f", null);
 
         for (int i = 0; i < 54; i++) {
             if (i <= 3 || (i >= 5 && i <= 8) || i == 9 || i == 17 || i == 18 || i == 26 ||
@@ -64,6 +63,7 @@ public class SmartphoneMainScreen implements SmartphoneScreen {
     public void handleSlotClick(Player player, int slot) {
         if (appActions.containsKey(slot)) {
             appActions.get(slot).accept(player);
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             return;
         }
 
@@ -72,7 +72,8 @@ public class SmartphoneMainScreen implements SmartphoneScreen {
                 && clickedItem.getType() != Material.GRAY_STAINED_GLASS_PANE
                 && clickedItem.getType() != Material.LIGHT_GRAY_STAINED_GLASS_PANE
                 && clickedItem.getType() != Material.PLAYER_HEAD) {
-            player.sendMessage(Component.text(MessageUtil.getPrefix() + "§c아직 구현 중인 기능입니다."));
+            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+            MessageUtil.send(player, "§c아직 구현 중인 기능입니다.");
         }
     }
 

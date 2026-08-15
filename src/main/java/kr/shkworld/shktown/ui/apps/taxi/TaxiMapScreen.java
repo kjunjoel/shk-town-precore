@@ -1,7 +1,7 @@
 package kr.shkworld.shktown.ui.apps.taxi;
 
 import kr.shkworld.shktown.SHKTown;
-import kr.shkworld.shktown.core.taxi.model.Position;
+import kr.shkworld.shktown.core.common.model.Position;
 import kr.shkworld.shktown.core.taxi.model.TaxiMap;
 import kr.shkworld.shktown.core.taxi.model.TaxiStop;
 import kr.shkworld.shktown.core.taxi.service.TaxiService;
@@ -18,10 +18,23 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class TaxiMapScreen implements SmartphoneScreen {
     private final SHKTown plugin;
     private final TaxiMap taxiMap;
     private final Inventory inventory;
+
+    private static final Map<String, NaviInfo> NAVI_MAP = Map.of(
+            "up", new NaviInfo(4, "§a▲ 위쪽 지도로 이동"),
+            "left",  new NaviInfo(18, "§a◀ 왼쪽 지도로 이동"),
+            "right",  new NaviInfo(26, "§a오른쪽 지도로 이동 ▶"),
+            "down", new NaviInfo(40, "§a▼ 아래쪽 지도로 이동")
+    );
+    private static final Map<Integer, String> NAVI_SLOTS = NAVI_MAP.entrySet().stream()
+            .collect(Collectors.toMap(e -> e.getValue().slot(), Map.Entry::getKey));
+    private record NaviInfo(int slot, String label) {}
 
     public TaxiMapScreen(SHKTown plugin, TaxiMap taxiMap) {
         this.plugin = plugin;
@@ -34,12 +47,11 @@ public class TaxiMapScreen implements SmartphoneScreen {
     private void initLayout() {
         inventory.setItem(49, GUIUtil.createItem(Material.COMPASS, "§c§lHOME", "§7스마트폰 메인 화면으로 복귀합니다."));
 
-        if (taxiMap.navigation().containsKey("west")) {
-            inventory.setItem(18, GUIUtil.createItem(Material.ARROW, "§a◀ 서쪽 지도로 이동", null));
-        }
-        if (taxiMap.navigation().containsKey("east")) {
-            inventory.setItem(26, GUIUtil.createItem(Material.ARROW, "§a동쪽 지도로 이동 ▶", null));
-        }
+        NAVI_MAP.forEach((dir, info) -> {
+            if (taxiMap.navigation().containsKey(dir)) {
+                inventory.setItem(info.slot(), GUIUtil.createItem(Material.ARROW, info.label(), null));
+            }
+        });
 
         if (taxiMap.stopSlots() != null) {
             for (var entry : taxiMap.stopSlots().entrySet()) {
@@ -65,18 +77,14 @@ public class TaxiMapScreen implements SmartphoneScreen {
         TaxiMapManager taxiMapManager = plugin.getTaxiMapManager();
 
         if (slot == 49) {
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             plugin.getSmartphoneManager().openMainScreen(player);
         }
 
-        if (slot == 18 && taxiMap.navigation().containsKey("west")) {
+        String direction = NAVI_SLOTS.get(slot);
+        if (direction != null && taxiMap.navigation().get(direction) instanceof String nextMap) {
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.2f);
-            taxiMapManager.openMap(player, taxiMap.navigation().get("west"));
-            return;
-        }
-
-        if (slot == 26 && taxiMap.navigation().containsKey("east")) {
-            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.2f);
-            taxiMapManager.openMap(player, taxiMap.navigation().get("east"));
+            taxiMapManager.openMap(player, nextMap);
             return;
         }
 
@@ -84,7 +92,7 @@ public class TaxiMapScreen implements SmartphoneScreen {
         if (stop != null) {
             Position userPosition = LocationUtil.toPosition(player.getLocation());
             if (!taxiService.isPositionInTaxiStop(userPosition)) {
-                MessageUtil.send(player, taxiService.getNotInStopMessage(), taxiService.getUseGlobalPrefix());
+                MessageUtil.send(player, taxiService.getConfig().notInStopMessage(), taxiService.getConfig().useGlobalPrefix());
                 player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                 player.closeInventory();
                 return;
@@ -92,11 +100,11 @@ public class TaxiMapScreen implements SmartphoneScreen {
 
             player.closeInventory();
 
-            String mainTitleStr = taxiService.getTitleMain().replace("{stop_name}", stop.name());
-            String subTitleStr = taxiService.getTitleSub().replace("{stop_name}", stop.name());
+            String mainTitleStr = taxiService.getConfig().titleMain().replace("{stop_name}", stop.name());
+            String subTitleStr = taxiService.getConfig().titleSub().replace("{stop_name}", stop.name());
             MessageUtil.sendTitle(player, mainTitleStr, subTitleStr,
-                                  taxiService.getTitleFadeInMs(), taxiService.getTitleStayMs(), taxiService.getTitleFadeOutMs());
-            player.playSound(player.getLocation(), Sound.ENTITY_MINECART_RIDING, 1.0f, 1.0f);
+                                  taxiService.getConfig().titleFadeInMs(), taxiService.getConfig().titleStayMs(), taxiService.getConfig().titleFadeOutMs());
+            player.playSound(player.getLocation(), Sound.ENTITY_MINECART_RIDING, 1.0f, 1.0f / ((float) taxiService.getConfig().teleportDelayTicks() / 40));
 
             Location targetLocation = LocationUtil.toLocation(stop.position());
 
@@ -105,10 +113,10 @@ public class TaxiMapScreen implements SmartphoneScreen {
                     player.teleport(targetLocation);
                     player.playSound(player.getLocation(), Sound.BLOCK_IRON_DOOR_CLOSE, 1.0f, 1.0f);
 
-                    String arrivedMessage = taxiService.getArrivedMessage().replace("{stop_name}", stop.name());
-                    MessageUtil.send(player, arrivedMessage, taxiService.getUseGlobalPrefix());
+                    String arrivedMessage = taxiService.getConfig().arrivedMessage().replace("{stop_name}", stop.name());
+                    MessageUtil.send(player, arrivedMessage, taxiService.getConfig().useGlobalPrefix());
                 }
-            }, taxiService.getTeleportDelayTicks());
+            }, taxiService.getConfig().teleportDelayTicks());
         }
     }
 

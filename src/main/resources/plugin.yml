@@ -3,6 +3,8 @@ version: 1.0
 main: kr.shkworld.shktown.SHKTown
 api-version: 1.21
 
+depend: [BetterHud]
+
 commands:
   shktown:
     usage: "/shktown reload"

@@ -27,7 +27,7 @@ public class SHKTownCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
 
-            plugin.reloadAllConfigs();
+            plugin.reload();
             MessageUtil.sendReloadSuccess(sender);
             return true;
         }

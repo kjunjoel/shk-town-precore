@@ -1,32 +1,42 @@
 package kr.shkworld.shktown;
 
 import kr.shkworld.shktown.command.CommandManager;
-import kr.shkworld.shktown.config.GlobalConfigLoader;
-import kr.shkworld.shktown.config.SmartphoneConfigLoader;
-import kr.shkworld.shktown.config.TaxiConfigLoader;
+import kr.shkworld.shktown.config.ConfigManager;
+import kr.shkworld.shktown.core.AppInitializer;
+import kr.shkworld.shktown.core.ServiceRegistry;
+import kr.shkworld.shktown.core.navigation.service.NavigationService;
+import kr.shkworld.shktown.core.navigation.service.impl.NavigationServiceImpl;
 import kr.shkworld.shktown.core.taxi.service.TaxiService;
 import kr.shkworld.shktown.core.taxi.service.impl.TaxiServiceImpl;
 import kr.shkworld.shktown.listener.EventManager;
 import kr.shkworld.shktown.ui.apps.SmartphoneManager;
+import kr.shkworld.shktown.ui.apps.navigation.NavigationManager;
 import kr.shkworld.shktown.ui.apps.taxi.TaxiMapManager;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class SHKTown extends JavaPlugin {
+    private ConfigManager configManager;
+    private ServiceRegistry serviceRegistry;
+
     private SmartphoneManager smartphoneManager;
     private TaxiService taxiService;
     private TaxiMapManager taxiMapManager;
+    private NavigationService navigationService;
+    private NavigationManager navigationManager;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
 
         this.taxiService = new TaxiServiceImpl();
+        this.navigationService = new NavigationServiceImpl();
 
         this.smartphoneManager = new SmartphoneManager(this);
         this.taxiMapManager = new TaxiMapManager(this);
+        this.navigationManager = new NavigationManager(this);
 
-        reloadAllConfigs();
+        this.configManager = new ConfigManager(this);
+        this.serviceRegistry = AppInitializer.initServiceRegistry(this);
 
         new EventManager(this).registerEvents();
         new CommandManager(this).registerCommands();
@@ -39,21 +49,16 @@ public class SHKTown extends JavaPlugin {
         getLogger().info("SHK TOWN 플러그인이 종료되었습니다.");
     }
 
-    public void reloadAllConfigs() {
-        reloadConfig();
-        FileConfiguration config = getConfig();
-
-        GlobalConfigLoader.loadGlobalConfig(config);
-
-        SmartphoneConfigLoader.loadSmartphoneConfig(config, smartphoneManager);
-
-        TaxiConfigLoader.loadSettings(config, taxiService);
-        TaxiConfigLoader.loadStops(config, taxiService);
-        TaxiConfigLoader.loadMaps(this, config, taxiMapManager);
+    public void reload() {
+        configManager.loadConfigs(serviceRegistry);
     }
 
     public TaxiService getTaxiService() {
         return taxiService;
+    }
+
+    public NavigationService getNavigationService() {
+        return navigationService;
     }
 
     public SmartphoneManager getSmartphoneManager() {
@@ -62,5 +67,9 @@ public class SHKTown extends JavaPlugin {
 
     public TaxiMapManager getTaxiMapManager() {
         return taxiMapManager;
+    }
+
+    public NavigationManager getNavigationManager() {
+        return navigationManager;
     }
 }

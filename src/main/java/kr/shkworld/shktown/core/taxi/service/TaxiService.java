@@ -1,36 +1,13 @@
 package kr.shkworld.shktown.core.taxi.service;
 
-import kr.shkworld.shktown.core.taxi.model.Position;
+import kr.shkworld.shktown.core.common.model.Position;
+import kr.shkworld.shktown.core.taxi.model.TaxiConfig;
 import kr.shkworld.shktown.core.taxi.model.TaxiStop;
 
 public interface TaxiService {
-    void setSettings(String defaultMap, boolean requireTaxiStop, double allowedRadius);
+    void setConfig(TaxiConfig config);
 
-    String getDefaultMap();
-
-    void setUi(String titleMain, String titleSub, int titleFadeInMs, int titleStayMs, int titleFadeOutMs, long teleportDelayTicks);
-
-    String getTitleMain();
-
-    String getTitleSub();
-
-    int getTitleFadeInMs();
-
-    int getTitleStayMs();
-
-    int getTitleFadeOutMs();
-
-    long getTeleportDelayTicks();
-
-    void setMessages(boolean useGlobalPrefix, String notInStop, String arrived, String loadingApp);
-
-    boolean getUseGlobalPrefix();
-
-    String getNotInStopMessage();
-
-    String getArrivedMessage();
-
-    String getLoadingAppMessage();
+    TaxiConfig getConfig();
 
     void registerTaxiStop(String key, TaxiStop taxiStop);
 

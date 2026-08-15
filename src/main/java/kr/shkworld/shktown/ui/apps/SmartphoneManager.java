@@ -1,7 +1,8 @@
 package kr.shkworld.shktown.ui.apps;
 
 import kr.shkworld.shktown.SHKTown;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import kr.shkworld.shktown.ui.apps.navigation.NavigationScreen;
+import kr.shkworld.shktown.util.MessageUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -25,15 +26,19 @@ public class SmartphoneManager {
         appActions.put(49, this::openMainScreen);
 
         appActions.put(30, player -> {
-            String loadingMsg = plugin.getTaxiService().getLoadingAppMessage();
-            if (loadingMsg != null) {
-                player.sendMessage(LegacyComponentSerializer.legacySection().deserialize(loadingMsg));
-            }
+            MessageUtil.send(player, plugin.getTaxiService().getConfig().loadingAppMessage(), false);
 
             player.closeInventory();
 
-            String defaultMap =  plugin.getTaxiService().getDefaultMap();
+            String defaultMap =  plugin.getTaxiService().getConfig().defaultMap();
             plugin.getTaxiMapManager().openMap(player, defaultMap);
+        });
+
+        appActions.put(31, player -> {
+            player.closeInventory();
+
+            NavigationScreen navigationScreen = new NavigationScreen(plugin, player);
+            player.openInventory(navigationScreen.getInventory());
         });
     }
 

@@ -15,40 +15,39 @@ public class SmartphoneConfigLoader {
     private SmartphoneConfigLoader() {}
 
     public static void loadSmartphoneConfig(FileConfiguration config, SmartphoneManager smartphoneManager) {
-        ConfigurationSection smartphoneSection = config.getConfigurationSection("smartphone");
-        if (smartphoneSection != null) {
-            String title = smartphoneSection.getString("title", "");
-            smartphoneManager.setMainTitle(title);
+        if (config == null || smartphoneManager == null) return;
 
-            Map<Integer, ItemStack> appItems = new HashMap<>();
-            ConfigurationSection itemsSection = smartphoneSection.getConfigurationSection("items");
-            if (itemsSection != null) {
-                for (String key : itemsSection.getKeys(false)) {
-                    ConfigurationSection itemSection = itemsSection.getConfigurationSection(key);
-                    if (itemSection == null) continue;
+        String title = config.getString("title", "");
+        smartphoneManager.setMainTitle(title);
 
-                    int slot = itemSection.getInt("slot", 0);
-                    String materialString = itemSection.getString("material", "STONE");
-                    Material material = Material.matchMaterial(materialString);
-                    if (material == null) {
-                        material = Material.STONE;
-                    }
+        Map<Integer, ItemStack> appItems = new HashMap<>();
+        ConfigurationSection itemsSection = config.getConfigurationSection("items");
+        if (itemsSection != null) {
+            for (String key : itemsSection.getKeys(false)) {
+                ConfigurationSection itemSection = itemsSection.getConfigurationSection(key);
+                if (itemSection == null) continue;
 
-                    String name = itemSection.getString("name", "");
-                    String modelName = itemSection.getString("model_name", "");
-
-                    List<String> loreList = itemSection.getStringList("lore");
-                    ItemStack itemStack = GUIUtil.createItem(
-                            material,
-                            name,
-                            modelName,
-                            loreList.toArray(new String[0])
-                    );
-
-                    appItems.put(slot, itemStack);
+                int slot = itemSection.getInt("slot", 0);
+                String materialString = itemSection.getString("material", "AIR");
+                Material material = Material.matchMaterial(materialString);
+                if (material == null) {
+                    material = Material.STONE;
                 }
+
+                String name = itemSection.getString("name", "");
+                String modelName = itemSection.getString("model_name", "");
+
+                List<String> loreList = itemSection.getStringList("lore");
+                ItemStack itemStack = GUIUtil.createItem(
+                        material,
+                        name,
+                        modelName,
+                        loreList.toArray(new String[0])
+                );
+
+                appItems.put(slot, itemStack);
             }
-            smartphoneManager.setAppItems(appItems);
         }
+        smartphoneManager.setAppItems(appItems);
     }
 }

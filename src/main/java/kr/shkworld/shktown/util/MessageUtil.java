@@ -1,17 +1,21 @@
 package kr.shkworld.shktown.util;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.time.Duration;
+import java.util.regex.Pattern;
 
 public class MessageUtil {
     private static String prefix = "";
     private static String reloadSuccess = "";
     private static String noPermission = "";
+
+    private static final Pattern COLOR_PATTERN = Pattern.compile("(?i)[&§][0-9A-FK-ORX]");
 
     private MessageUtil() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated.");
@@ -27,7 +31,8 @@ public class MessageUtil {
         if (text == null || text.isEmpty()) {
             return Component.empty();
         }
-        return LegacyComponentSerializer.legacySection().deserialize(text);
+        String finalMessage = text.replace("&", "§");
+        return LegacyComponentSerializer.legacySection().deserialize(finalMessage).decoration(TextDecoration.ITALIC, false);
     }
 
     public static void send(CommandSender sender, String message) {
@@ -37,6 +42,7 @@ public class MessageUtil {
     public static void send(CommandSender sender, String message, boolean withPrefix) {
         if (sender != null && message != null) {
             String finalMessage = withPrefix ? prefix + message : message;
+            finalMessage = finalMessage.replace("&", "§");
             sender.sendMessage(parse(finalMessage));
         }
     }
@@ -60,6 +66,11 @@ public class MessageUtil {
 
         Title titleObject = Title.title(main, sub, times);
         player.showTitle(titleObject);
+    }
+
+    public static String stripColor(String text) {
+        if (text == null || text.isEmpty()) return "";
+        return COLOR_PATTERN.matcher(text).replaceAll("");
     }
 
     public static void sendReloadSuccess(CommandSender sender) {

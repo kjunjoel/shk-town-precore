@@ -1,6 +1,7 @@
 package kr.shkworld.shktown.config;
 
-import kr.shkworld.shktown.core.taxi.model.Position;
+import kr.shkworld.shktown.core.common.model.Position;
+import kr.shkworld.shktown.core.taxi.model.TaxiConfig;
 import kr.shkworld.shktown.core.taxi.model.TaxiMap;
 import kr.shkworld.shktown.core.taxi.model.TaxiStop;
 import kr.shkworld.shktown.core.taxi.service.TaxiService;
@@ -15,41 +16,49 @@ import java.util.Map;
 public class TaxiConfigLoader {
     private TaxiConfigLoader() {}
 
-    public static void loadSettings(FileConfiguration config, TaxiService taxiService) {
-        ConfigurationSection settings = config.getConfigurationSection("taxi.settings");
-        if (settings != null) {
-            taxiService.setSettings(
-                    settings.getString("default_map", ""),
-                    settings.getBoolean("require_taxi_stop", false),
-                    settings.getDouble("allowed_radius", 0.0)
-            );
-        }
+    public static void loadTaxiConfig(JavaPlugin plugin, FileConfiguration config, TaxiService taxiService, TaxiMapManager taxiMapManager) {
+        if (config == null || taxiService == null || taxiMapManager == null) return;
 
-        ConfigurationSection ui = config.getConfigurationSection("taxi.ui");
-        if (ui != null) {
-            taxiService.setUi(
-                    ui.getString("title_main", ""),
-                    ui.getString("title_sub", ""),
-                    ui.getInt("title_fade_in_ms", 0),
-                    ui.getInt("title_stay_ms", 0),
-                    ui.getInt("title_fade_out_ms", 0),
-                    ui.getLong("teleport_delay_ticks", 0L)
-            );
-        }
-        ConfigurationSection messages =  config.getConfigurationSection("taxi.messages");
-        if (messages != null) {
-            taxiService.setMessages(
-                    messages.getBoolean("use_global_prefix", false),
-                    messages.getString("not_in_stop", ""),
-                    messages.getString("arrived", ""),
-                    messages.getString("loading_app", "")
-            );
-        }
+        TaxiConfig taxiConfig = parseSettings(config);
+        taxiService.setConfig(taxiConfig);
+
+        loadStops(config, taxiService);
+
+        loadMaps(plugin, config, taxiMapManager);
     }
 
-    public static void loadStops(FileConfiguration config, TaxiService taxiService) {
+    private static TaxiConfig parseSettings(FileConfiguration config) {
+        ConfigurationSection settings = config.getConfigurationSection("settings");
+        String defaultMap = settings != null ? settings.getString("default_map", "") : "";
+        boolean requireTaxiStop = settings != null && settings.getBoolean("require_taxi_stop", false);
+        double allowedRadius = settings != null ? settings.getDouble("allowed_radius", 0.0) : 0.0;
+        
+        ConfigurationSection ui = config.getConfigurationSection("ui");
+        String titleMain = ui != null ? ui.getString("title_main", "") : "";
+        String titleSub = ui != null ? ui.getString("title_sub", "") : "";
+        int fadeIn = ui != null ? ui.getInt("title_fade_in_ms", 0) : 0;
+        int stay = ui != null ? ui.getInt("title_stay_ms", 0) : 0;
+        int fadeOut = ui != null ? ui.getInt("title_fade_out_ms", 0) : 0;
+        long delayTicks = ui != null ? ui.getLong("teleport_delay_ticks", 0L) : 0L;
+
+        ConfigurationSection messages = config.getConfigurationSection("messages");
+        boolean useGlobalPrefix = messages != null && messages.getBoolean("use_global_prefix", false);
+        String notInStop = messages != null ? messages.getString("not_in_stop", "") : "";
+        String arrived = messages != null ? messages.getString("arrived", "") : "";
+        String loadingApp = messages != null ? messages.getString("loading_app", "") : "";
+
+        return new TaxiConfig(
+                defaultMap, requireTaxiStop, allowedRadius,
+                titleMain, titleSub, fadeIn, stay, fadeOut, delayTicks,
+                useGlobalPrefix, notInStop, arrived, loadingApp
+        );
+    }
+
+    private static void loadStops(FileConfiguration config, TaxiService taxiService) {
+        if (config == null || taxiService == null) return;
         taxiService.clearTaxiStops();
-        ConfigurationSection stops = config.getConfigurationSection("taxi.stops");
+
+        ConfigurationSection stops = config.getConfigurationSection("stops");
         if (stops != null) {
             for (String key : stops.getKeys(false)) {
                 ConfigurationSection stop = stops.getConfigurationSection(key);
@@ -72,7 +81,8 @@ public class TaxiConfigLoader {
         }
     }
 
-    public static void loadMaps(JavaPlugin plugin, FileConfiguration config, TaxiMapManager mapManager) {
+    private static void loadMaps(JavaPlugin plugin, FileConfiguration config, TaxiMapManager mapManager) {
+        if (config == null || mapManager == null) return;
         mapManager.clearMaps();
 
         ConfigurationSection mapsSection = config.getConfigurationSection("taxi.maps");
