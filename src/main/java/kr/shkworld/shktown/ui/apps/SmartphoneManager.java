@@ -76,7 +76,7 @@ public class SmartphoneManager {
     }
 
     public void openMainScreen(Player player) {
-        SmartphoneMainScreen mainScreen = new SmartphoneMainScreen(player, mainTitle, appItems, appActions);
+        SmartphoneMainScreen mainScreen = new SmartphoneMainScreen(player, mainTitle, homeButton, appItems, appActions);
         player.openInventory(mainScreen.getInventory());
     }
 

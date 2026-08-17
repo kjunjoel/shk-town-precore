@@ -20,7 +20,7 @@ public final class TaxiNpcInteractionListener implements Listener {
         if (!isConfiguredTaxiNpc(entity)) return;
 
         event.setCancelled(true);
-        plugin.getTaxiMapManager().openMap(event.getPlayer(), plugin.getTaxiMapManager().getDefaultMap());
+        plugin.getTaxiMapManager().openNpcMap(event.getPlayer(), plugin.getTaxiMapManager().getDefaultMap());
     }
 
     private boolean isConfiguredTaxiNpc(Entity entity) {

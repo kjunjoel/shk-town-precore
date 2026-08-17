@@ -22,14 +22,14 @@ public class SmartphoneMainScreen implements SmartphoneScreen {
     private final Inventory inventory;
     private final Map<Integer, Consumer<Player>> appActions;
 
-    public SmartphoneMainScreen(Player player, String title, Map<Integer, ItemStack> appItems, Map<Integer, Consumer<Player>> appActions) {
+    public SmartphoneMainScreen(Player player, String title, ItemStack homeButton, Map<Integer, ItemStack> appItems, Map<Integer, Consumer<Player>> appActions) {
         this.appActions = appActions != null ? appActions : new HashMap<>();
         this.inventory = Bukkit.createInventory(this, 54, TextUtil.parse(title));
 
-        initLayout(player, appItems);
+        initLayout(player, homeButton, appItems);
     }
 
-    private void initLayout(Player player, Map<Integer, ItemStack> appItems) {
+    private void initLayout(Player player, ItemStack homeButton, Map<Integer, ItemStack> appItems) {
         ItemStack bezel = GUIUtil.createItem(Material.GRAY_STAINED_GLASS_PANE, "&f", null);
 
         for (int i = 0; i < 54; i++) {
@@ -54,7 +54,9 @@ public class SmartphoneMainScreen implements SmartphoneScreen {
             appItems.forEach(inventory::setItem);
         }
 
-        inventory.setItem(49, GUIUtil.createItem(Material.COMPASS, "§cHOME", "§7스마트폰 메인 화면으로 복귀합니다."));
+        inventory.setItem(49, homeButton != null
+                ? homeButton.clone()
+                : GUIUtil.createItem(Material.COMPASS, "&cHOME", null));
     }
 
     @Override

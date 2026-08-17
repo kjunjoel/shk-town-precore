@@ -2,7 +2,6 @@ package kr.shkworld.shktown.ui;
 
 import kr.shkworld.shktown.SHKTown;
 import kr.shkworld.shktown.util.GUIUtil;
-import kr.shkworld.shktown.util.MessageUtil;
 import kr.shkworld.shktown.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -30,9 +29,13 @@ public abstract class AbstractSmartphoneScreen implements SmartphoneScreen {
         inventory.setItem(49, homeButton);
     }
 
+    protected boolean hasHomeButton() {
+        return true;
+    }
+
     @Override
     public void handleSlotClick(Player player, int slot) {
-        if (slot == 49) {
+        if (hasHomeButton() && slot == 49) {
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             plugin.getSmartphoneManager().openMainScreen(player);
             return;
@@ -43,7 +46,7 @@ public abstract class AbstractSmartphoneScreen implements SmartphoneScreen {
 
     @Override
     public void handleSlotClick(Player player, int slot, ClickType clickType) {
-        if (slot == 49) {
+        if (hasHomeButton() && slot == 49) {
             handleSlotClick(player, slot);
             return;
         }

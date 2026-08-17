@@ -19,24 +19,29 @@ public class TaxiMapScreen extends AbstractSmartphoneScreen {
     private final Map<Integer, ItemStack> stopItems;
     private final Map<Integer, Position> stopPositions;
     private final Map<Integer, String> stopNames;
+    private final boolean showHomeButton;
 
     private static final int PREVIOUS_MAP_SLOT = 45;
     private static final int NEXT_MAP_SLOT = 53;
 
     public TaxiMapScreen(SHKTown plugin, TaxiMapManager manager, String title, Map<String, String> navigation,
-                         Map<Integer, ItemStack> stopItems, Map<Integer, Position> stopPositions, Map<Integer, String> stopNames) {
+                         Map<Integer, ItemStack> stopItems, Map<Integer, Position> stopPositions, Map<Integer, String> stopNames,
+                         boolean showHomeButton) {
         super(plugin, 54, title);
         this.manager = manager;
         this.navigation = Map.copyOf(navigation);
         this.stopItems = Map.copyOf(stopItems);
         this.stopPositions = Map.copyOf(stopPositions);
         this.stopNames = Map.copyOf(stopNames);
+        this.showHomeButton = showHomeButton;
 
         initLayout();
     }
 
     private void initLayout() {
-        applyCommonLayout();
+        if (showHomeButton) {
+            applyCommonLayout();
+        }
 
         if (navigation.containsKey("previous")) {
             inventory.setItem(PREVIOUS_MAP_SLOT, plugin.getSmartphoneManager().getNavigationPreviousButton());
@@ -49,11 +54,16 @@ public class TaxiMapScreen extends AbstractSmartphoneScreen {
     }
 
     @Override
+    protected boolean hasHomeButton() {
+        return showHomeButton;
+    }
+
+    @Override
     protected void handleAppClick(Player player, int slot, ClickType clickType) {
         String direction = slot == PREVIOUS_MAP_SLOT ? "previous" : slot == NEXT_MAP_SLOT ? "next" : null;
         if (direction != null && navigation.get(direction) instanceof String nextMap) {
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.2f);
-            manager.openMap(player, nextMap);
+            manager.openMap(player, nextMap, showHomeButton);
             return;
         }
 

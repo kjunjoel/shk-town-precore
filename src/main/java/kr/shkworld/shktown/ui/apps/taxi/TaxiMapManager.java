@@ -12,6 +12,7 @@ import java.util.Map;
 public class TaxiMapManager {
     private final SHKTown plugin;
     private final Map<String, TaxiMapScreen> mapScreens = new HashMap<>();
+    private final Map<String, TaxiMapScreen> npcMapScreens = new HashMap<>();
     private TaxiMainScreen mainScreen;
     private ItemStack taxiCallPass;
     private String noCallPassMessage = "&c택시 호출권이 필요합니다.";
@@ -39,17 +40,27 @@ public class TaxiMapManager {
     public void registerMap(String id, String title, Map<String, String> navigation, Map<Integer, ItemStack> stopItems,
                             Map<Integer, Position> stopPositions, Map<Integer, String> stopNames) {
         if (id != null) {
-            this.mapScreens.put(id, new TaxiMapScreen(plugin, this, title, navigation, stopItems, stopPositions, stopNames));
+            this.mapScreens.put(id, new TaxiMapScreen(plugin, this, title, navigation, stopItems, stopPositions, stopNames, true));
+            this.npcMapScreens.put(id, new TaxiMapScreen(plugin, this, title, navigation, stopItems, stopPositions, stopNames, false));
         }
     }
 
     public void clearMaps() {
         this.mapScreens.clear();
+        this.npcMapScreens.clear();
         this.mainScreen = null;
     }
 
     public void openMap(Player player, String id) {
-        TaxiMapScreen screen = mapScreens.get(id);
+        openMap(player, id, true);
+    }
+
+    public void openNpcMap(Player player, String id) {
+        openMap(player, id, false);
+    }
+
+    public void openMap(Player player, String id, boolean showHomeButton) {
+        TaxiMapScreen screen = (showHomeButton ? mapScreens : npcMapScreens).get(id);
         if (screen == null) {
             MessageUtil.send(player, "§c존재하지 않는 지도 타일입니다: " + id);
             return;
