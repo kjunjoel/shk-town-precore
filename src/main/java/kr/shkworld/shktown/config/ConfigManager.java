@@ -39,7 +39,6 @@ public class ConfigManager {
         TaxiConfigLoader.loadTaxiConfig(
                 plugin,
                 getConfig("taxi"),
-                plugin.getTaxiService(),
                 plugin.getTaxiMapManager()
         );
 

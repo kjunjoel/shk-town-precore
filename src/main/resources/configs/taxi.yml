@@ -1,7 +1,5 @@
 settings:
   default_map: "map_0_0"
-  require_taxi_stop: true
-  allowed_radius: 5.0
 
 # 카카오 T 서비스 선택 화면. title은 리소스팩 GUI 배경 글리프입니다.
 main_screen:
@@ -91,7 +89,6 @@ access:
     model_data: 1132
   npc:
     enabled: true
-    entity_type: VILLAGER
     name: "택시 기사"
 
 ui:
@@ -103,7 +100,6 @@ ui:
   teleport_delay_ticks: 60
 
 messages:
-  not_in_stop: "&c[SHARK T] 주변에 택시 정류장이 없어 호출할 수 없습니다!"
   arrived: "&a[SHARK T] {stop_name}에 도착하였습니다!"
   loading_app: "&e[SHARK T] &a앱을 로딩하는 중..."
   unavailable_service: "&c[SHARK T] 아직 사용할 수 없는 서비스입니다."

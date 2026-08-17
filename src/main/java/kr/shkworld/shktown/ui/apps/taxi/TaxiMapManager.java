@@ -16,7 +16,6 @@ public class TaxiMapManager {
     private ItemStack taxiCallPass;
     private String noCallPassMessage = "&c택시 호출권이 필요합니다.";
     private boolean npcEnabled;
-    private String npcEntityType = "VILLAGER";
     private String npcName = "";
     private String defaultMap = "";
     private String mainScreenTitle = "";
@@ -24,7 +23,6 @@ public class TaxiMapManager {
     private Map<Integer, String> mainButtonMaps = Map.of();
     private String unavailableServiceMessage = "";
     private boolean useGlobalPrefix;
-    private String notInStopMessage = "";
     private String arrivedMessage = "";
     private String loadingAppMessage = "";
     private String titleMain = "";
@@ -61,17 +59,16 @@ public class TaxiMapManager {
     }
 
     public void configureAccess(ItemStack taxiCallPass, String noCallPassMessage,
-                                boolean npcEnabled, String npcEntityType, String npcName) {
+                                boolean npcEnabled, String npcName) {
         this.taxiCallPass = taxiCallPass;
         this.noCallPassMessage = noCallPassMessage;
         this.npcEnabled = npcEnabled;
-        this.npcEntityType = npcEntityType;
         this.npcName = npcName;
     }
 
     public void configureUi(String defaultMap, String mainScreenTitle, Map<Integer, ItemStack> mainButtons,
                             Map<Integer, String> mainButtonMaps, String unavailableServiceMessage,
-                            boolean useGlobalPrefix, String notInStopMessage, String arrivedMessage, String loadingAppMessage,
+                            boolean useGlobalPrefix, String arrivedMessage, String loadingAppMessage,
                             String titleMain, String titleSub, int titleFadeInMs, int titleStayMs, int titleFadeOutMs,
                             long teleportDelayTicks) {
         this.defaultMap = defaultMap;
@@ -80,7 +77,6 @@ public class TaxiMapManager {
         this.mainButtonMaps = Map.copyOf(mainButtonMaps);
         this.unavailableServiceMessage = unavailableServiceMessage;
         this.useGlobalPrefix = useGlobalPrefix;
-        this.notInStopMessage = notInStopMessage;
         this.arrivedMessage = arrivedMessage;
         this.loadingAppMessage = loadingAppMessage;
         this.titleMain = titleMain;
@@ -104,7 +100,6 @@ public class TaxiMapManager {
     }
 
     public boolean isNpcEnabled() { return npcEnabled; }
-    public String getNpcEntityType() { return npcEntityType; }
     public String getNpcName() { return npcName; }
 
     public void openMainScreen(Player player) {
@@ -117,7 +112,6 @@ public class TaxiMapManager {
     public String getDefaultMap() { return defaultMap; }
     public String getLoadingAppMessage() { return loadingAppMessage; }
     public boolean isUseGlobalPrefix() { return useGlobalPrefix; }
-    public String getNotInStopMessage() { return notInStopMessage; }
     public String getArrivedMessage() { return arrivedMessage; }
     public String getTitleMain() { return titleMain; }
     public String getTitleSub() { return titleSub; }

@@ -2,7 +2,6 @@ package kr.shkworld.shktown.ui.apps.taxi;
 
 import kr.shkworld.shktown.SHKTown;
 import kr.shkworld.shktown.core.common.model.Position;
-import kr.shkworld.shktown.core.taxi.service.TaxiService;
 import kr.shkworld.shktown.ui.AbstractSmartphoneScreen;
 import kr.shkworld.shktown.util.LocationUtil;
 import kr.shkworld.shktown.util.MessageUtil;
@@ -51,8 +50,6 @@ public class TaxiMapScreen extends AbstractSmartphoneScreen {
 
     @Override
     protected void handleAppClick(Player player, int slot, ClickType clickType) {
-        TaxiService taxiService = plugin.getTaxiService();
-
         String direction = slot == PREVIOUS_MAP_SLOT ? "previous" : slot == NEXT_MAP_SLOT ? "next" : null;
         if (direction != null && navigation.get(direction) instanceof String nextMap) {
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.2f);
@@ -63,14 +60,6 @@ public class TaxiMapScreen extends AbstractSmartphoneScreen {
         Position stopPosition = stopPositions.get(slot);
         if (stopPosition != null) {
             String stopName = stopNames.get(slot);
-            Position userPosition = LocationUtil.toPosition(player.getLocation());
-            if (!taxiService.isPositionInTaxiStop(userPosition)) {
-                MessageUtil.send(player, manager.getNotInStopMessage(), manager.isUseGlobalPrefix());
-                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
-                player.closeInventory();
-                return;
-            }
-
             player.closeInventory();
 
             String mainTitleStr = manager.getTitleMain().replace("{stop_name}", stopName);

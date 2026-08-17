@@ -42,6 +42,10 @@ public final class TaxiMainScreen extends AbstractSmartphoneScreen {
         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
         String mapId = mapByButton.get(slot);
         if (mapId != null) {
+            if (!manager.hasTaxiCallPass(player)) {
+                manager.sendNoCallPassMessage(player);
+                return;
+            }
             manager.openMap(player, mapId.isBlank() ? defaultMap : mapId);
         } else {
             kr.shkworld.shktown.util.MessageUtil.send(player, unavailableServiceMessage, false);

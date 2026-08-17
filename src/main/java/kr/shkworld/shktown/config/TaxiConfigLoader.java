@@ -1,7 +1,6 @@
 package kr.shkworld.shktown.config;
 
 import kr.shkworld.shktown.core.common.model.Position;
-import kr.shkworld.shktown.core.taxi.service.TaxiService;
 import kr.shkworld.shktown.ui.apps.taxi.TaxiMapManager;
 import kr.shkworld.shktown.util.GUIUtil;
 import org.bukkit.Material;
@@ -17,24 +16,20 @@ public final class TaxiConfigLoader {
     private TaxiConfigLoader() {
     }
 
-    public static void loadTaxiConfig(JavaPlugin plugin, FileConfiguration config, TaxiService taxiService, TaxiMapManager mapManager) {
-        if (config == null || taxiService == null || mapManager == null) return;
-
-        ConfigurationSection settings = config.getConfigurationSection("settings");
-        taxiService.setAllowedRadius(settings != null ? settings.getDouble("allowed_radius", 0.0) : 0.0);
+    public static void loadTaxiConfig(JavaPlugin plugin, FileConfiguration config, TaxiMapManager mapManager) {
+        if (config == null || mapManager == null) return;
 
         Map<String, Position> positions = new HashMap<>();
         Map<String, ItemStack> stopItems = new HashMap<>();
         Map<String, String> stopNames = new HashMap<>();
-        loadStops(config, taxiService, positions, stopItems, stopNames);
+        loadStops(config, positions, stopItems, stopNames);
         loadUi(config, mapManager);
         loadAccess(config, mapManager);
         loadMaps(plugin, config, mapManager, positions, stopItems, stopNames);
     }
 
-    private static void loadStops(FileConfiguration config, TaxiService service, Map<String, Position> positions,
+    private static void loadStops(FileConfiguration config, Map<String, Position> positions,
                                   Map<String, ItemStack> items, Map<String, String> names) {
-        service.clearTaxiStops();
         ConfigurationSection stops = config.getConfigurationSection("stops");
         if (stops == null) return;
         for (String key : stops.getKeys(false)) {
@@ -47,7 +42,6 @@ public final class TaxiConfigLoader {
             String name = stop.getString("name", key);
             positions.put(key, position);
             names.put(key, name);
-            service.registerTaxiStop(key, position);
             items.put(key, createItem(stop, "&e🚕 " + name,
                     "&fX: " + position.x() + ", Y: " + position.y() + ", Z: " + position.z(),
                     "&7클릭시 해당 승강장으로 이동합니다."));
@@ -78,7 +72,6 @@ public final class TaxiConfigLoader {
                 main != null ? main.getString("title", "") : "", buttons, maps,
                 messages != null ? messages.getString("unavailable_service", "") : "",
                 messages != null && messages.getBoolean("use_global_prefix", false),
-                messages != null ? messages.getString("not_in_stop", "") : "",
                 messages != null ? messages.getString("arrived", "") : "",
                 messages != null ? messages.getString("loading_app", "") : "",
                 ui != null ? ui.getString("title_main", "") : "", ui != null ? ui.getString("title_sub", "") : "",
@@ -94,8 +87,7 @@ public final class TaxiConfigLoader {
         ConfigurationSection messages = config.getConfigurationSection("messages");
         manager.configureAccess(createItem(callPass, "&e택시 호출권"),
                 messages != null ? messages.getString("no_call_pass", "") : "",
-                npc != null && npc.getBoolean("enabled"), npc != null ? npc.getString("entity_type", "VILLAGER") : "VILLAGER",
-                npc != null ? npc.getString("name", "") : "");
+                npc != null && npc.getBoolean("enabled"), npc != null ? npc.getString("name", "") : "");
     }
 
     private static void loadMaps(JavaPlugin plugin, FileConfiguration config, TaxiMapManager manager, Map<String, Position> positions,

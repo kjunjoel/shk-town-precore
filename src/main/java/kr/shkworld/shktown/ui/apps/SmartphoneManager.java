@@ -28,10 +28,6 @@ public class SmartphoneManager {
         appActions.put(49, this::openMainScreen);
 
         appActions.put(30, player -> {
-            if (!plugin.getTaxiMapManager().hasTaxiCallPass(player)) {
-                plugin.getTaxiMapManager().sendNoCallPassMessage(player);
-                return;
-            }
             MessageUtil.send(player, plugin.getTaxiMapManager().getLoadingAppMessage(), false);
             plugin.getTaxiMapManager().openMainScreen(player);
         });

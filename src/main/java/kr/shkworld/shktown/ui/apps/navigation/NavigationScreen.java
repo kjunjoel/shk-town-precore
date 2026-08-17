@@ -45,6 +45,13 @@ public class NavigationScreen extends AbstractSmartphoneScreen {
     private void refresh() {
         NavigationService navigationService = plugin.getNavigationService();
         NavigationManager navigationManager = plugin.getNavigationManager();
+        ItemStack bezel = GUIUtil.createItem(Material.LIGHT_BLUE_STAINED_GLASS_PANE, "&f", null);
+        for (int slot = 0; slot < 54; slot++) {
+            if (slot <= 3 || (slot >= 5 && slot <= 8) || slot == 9 || slot == 17 || slot == 18 || slot == 26
+                    || slot == 27 || slot == 35 || slot == 36 || slot >= 45) {
+                inventory.setItem(slot, bezel);
+            }
+        }
         applyCommonLayout();
 
         boolean isNavigating = navigationManager.isNavigating(player);
