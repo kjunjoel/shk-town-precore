@@ -1,19 +1,36 @@
 package kr.shkworld.shktown.core.taxi.service;
 
 import kr.shkworld.shktown.core.common.model.Position;
-import kr.shkworld.shktown.core.taxi.model.TaxiConfig;
-import kr.shkworld.shktown.core.taxi.model.TaxiStop;
 
-public interface TaxiService {
-    void setConfig(TaxiConfig config);
+import java.util.HashMap;
+import java.util.Map;
 
-    TaxiConfig getConfig();
+public final class TaxiService {
+    private double allowedRadius;
+    private final Map<String, Position> taxiStops = new HashMap<>();
 
-    void registerTaxiStop(String key, TaxiStop taxiStop);
+    public void setAllowedRadius(double allowedRadius) {
+        this.allowedRadius = Math.max(0.0, allowedRadius);
+    }
 
-    void clearTaxiStops();
+    public void registerTaxiStop(String key, Position position) {
+        if (key != null && position != null) taxiStops.put(key, position);
+    }
 
-    boolean isPositionInTaxiStop(Position position);
+    public void clearTaxiStops() {
+        taxiStops.clear();
+    }
 
-    TaxiStop getNearbyTaxiStop(Position position);
+    public boolean isPositionInTaxiStop(Position position) {
+        return getNearbyTaxiStop(position) != null;
+    }
+
+    public Position getNearbyTaxiStop(Position position) {
+        if (position == null) return null;
+        double radiusSquared = allowedRadius * allowedRadius;
+        for (Position taxiStop : taxiStops.values()) {
+            if (taxiStop.distanceSquared(position) <= radiusSquared) return taxiStop;
+        }
+        return null;
+    }
 }

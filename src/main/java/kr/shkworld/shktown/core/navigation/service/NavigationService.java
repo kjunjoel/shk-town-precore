@@ -1,22 +1,35 @@
 package kr.shkworld.shktown.core.navigation.service;
 
 import kr.shkworld.shktown.core.common.model.Position;
-import kr.shkworld.shktown.core.navigation.model.NavigationConfig;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public interface NavigationService {
-    void setConfig(NavigationConfig config);
+public final class NavigationService {
+    private double arrivalRadius;
+    private final Map<String, Position> destinations = new HashMap<>();
 
-    NavigationConfig getConfig();
+    public void setArrivalRadius(double arrivalRadius) {
+        this.arrivalRadius = Math.max(0.0, arrivalRadius);
+    }
 
-    void registerDestination(String key, Position destination);
+    public void registerDestination(String key, Position destination) {
+        if (key != null && destination != null) destinations.put(key, destination);
+    }
 
-    void clearDestinations();
+    public void clearDestinations() {
+        destinations.clear();
+    }
 
-    Position getDestination(String key);
+    public Position getDestination(String key) {
+        return key == null ? null : destinations.get(key);
+    }
 
-    Map<String, Position> getDestinations();
+    public Map<String, Position> getDestinations() {
+        return Map.copyOf(destinations);
+    }
 
-    boolean isArrived(Position current, Position destination);
+    public boolean isArrived(Position current, Position destination) {
+        return current != null && destination != null && current.distanceSquared(destination) <= arrivalRadius * arrivalRadius;
+    }
 }

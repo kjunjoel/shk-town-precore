@@ -1,138 +1,137 @@
 package kr.shkworld.shktown.config;
 
 import kr.shkworld.shktown.core.common.model.Position;
-import kr.shkworld.shktown.core.taxi.model.TaxiConfig;
-import kr.shkworld.shktown.core.taxi.model.TaxiMap;
-import kr.shkworld.shktown.core.taxi.model.TaxiStop;
 import kr.shkworld.shktown.core.taxi.service.TaxiService;
 import kr.shkworld.shktown.ui.apps.taxi.TaxiMapManager;
+import kr.shkworld.shktown.util.GUIUtil;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class TaxiConfigLoader {
-    private TaxiConfigLoader() {}
-
-    public static void loadTaxiConfig(JavaPlugin plugin, FileConfiguration config, TaxiService taxiService, TaxiMapManager taxiMapManager) {
-        if (config == null || taxiService == null || taxiMapManager == null) return;
-
-        TaxiConfig taxiConfig = parseSettings(config);
-        taxiService.setConfig(taxiConfig);
-
-        loadStops(config, taxiService);
-
-        loadMaps(plugin, config, taxiMapManager);
+public final class TaxiConfigLoader {
+    private TaxiConfigLoader() {
     }
 
-    private static TaxiConfig parseSettings(FileConfiguration config) {
+    public static void loadTaxiConfig(JavaPlugin plugin, FileConfiguration config, TaxiService taxiService, TaxiMapManager mapManager) {
+        if (config == null || taxiService == null || mapManager == null) return;
+
         ConfigurationSection settings = config.getConfigurationSection("settings");
-        String defaultMap = settings != null ? settings.getString("default_map", "") : "";
-        boolean requireTaxiStop = settings != null && settings.getBoolean("require_taxi_stop", false);
-        double allowedRadius = settings != null ? settings.getDouble("allowed_radius", 0.0) : 0.0;
-        
+        taxiService.setAllowedRadius(settings != null ? settings.getDouble("allowed_radius", 0.0) : 0.0);
+
+        Map<String, Position> positions = new HashMap<>();
+        Map<String, ItemStack> stopItems = new HashMap<>();
+        Map<String, String> stopNames = new HashMap<>();
+        loadStops(config, taxiService, positions, stopItems, stopNames);
+        loadUi(config, mapManager);
+        loadAccess(config, mapManager);
+        loadMaps(plugin, config, mapManager, positions, stopItems, stopNames);
+    }
+
+    private static void loadStops(FileConfiguration config, TaxiService service, Map<String, Position> positions,
+                                  Map<String, ItemStack> items, Map<String, String> names) {
+        service.clearTaxiStops();
+        ConfigurationSection stops = config.getConfigurationSection("stops");
+        if (stops == null) return;
+        for (String key : stops.getKeys(false)) {
+            ConfigurationSection stop = stops.getConfigurationSection(key);
+            if (stop == null) continue;
+            ConfigurationSection location = stop.getConfigurationSection("location");
+            if (location == null) continue;
+            Position position = new Position(location.getString("world"), location.getDouble("x"), location.getDouble("y"),
+                    location.getDouble("z"), (float) location.getDouble("yaw", 0), (float) location.getDouble("pitch", 0));
+            String name = stop.getString("name", key);
+            positions.put(key, position);
+            names.put(key, name);
+            service.registerTaxiStop(key, position);
+            items.put(key, createItem(stop, "&e🚕 " + name,
+                    "&fX: " + position.x() + ", Y: " + position.y() + ", Z: " + position.z(),
+                    "&7클릭시 해당 승강장으로 이동합니다."));
+        }
+    }
+
+    private static void loadUi(FileConfiguration config, TaxiMapManager manager) {
+        ConfigurationSection settings = config.getConfigurationSection("settings");
+        ConfigurationSection main = config.getConfigurationSection("main_screen");
+        Map<Integer, ItemStack> buttons = new HashMap<>();
+        Map<Integer, String> maps = new HashMap<>();
+        ConfigurationSection buttonSection = main != null ? main.getConfigurationSection("buttons") : null;
+        if (buttonSection != null) {
+            for (String key : buttonSection.getKeys(false)) {
+                ConfigurationSection button = buttonSection.getConfigurationSection(key);
+                if (button == null) continue;
+                int slot = button.getInt("slot", -1);
+                if (slot < 0 || slot >= 54) continue;
+                buttons.put(slot, createItem(button, button.getString("name", key),
+                        "OPEN_MAP".equalsIgnoreCase(button.getString("action")) ? "&7목적지를 선택하여 택시를 호출합니다." : "&7준비 중인 서비스입니다."));
+                if ("OPEN_MAP".equalsIgnoreCase(button.getString("action"))) maps.put(slot, button.getString("map", ""));
+            }
+        }
         ConfigurationSection ui = config.getConfigurationSection("ui");
-        String titleMain = ui != null ? ui.getString("title_main", "") : "";
-        String titleSub = ui != null ? ui.getString("title_sub", "") : "";
-        int fadeIn = ui != null ? ui.getInt("title_fade_in_ms", 0) : 0;
-        int stay = ui != null ? ui.getInt("title_stay_ms", 0) : 0;
-        int fadeOut = ui != null ? ui.getInt("title_fade_out_ms", 0) : 0;
-        long delayTicks = ui != null ? ui.getLong("teleport_delay_ticks", 0L) : 0L;
-
         ConfigurationSection messages = config.getConfigurationSection("messages");
-        boolean useGlobalPrefix = messages != null && messages.getBoolean("use_global_prefix", false);
-        String notInStop = messages != null ? messages.getString("not_in_stop", "") : "";
-        String arrived = messages != null ? messages.getString("arrived", "") : "";
-        String loadingApp = messages != null ? messages.getString("loading_app", "") : "";
-
-        return new TaxiConfig(
-                defaultMap, requireTaxiStop, allowedRadius,
-                titleMain, titleSub, fadeIn, stay, fadeOut, delayTicks,
-                useGlobalPrefix, notInStop, arrived, loadingApp
+        manager.configureUi(
+                settings != null ? settings.getString("default_map", "") : "",
+                main != null ? main.getString("title", "") : "", buttons, maps,
+                messages != null ? messages.getString("unavailable_service", "") : "",
+                messages != null && messages.getBoolean("use_global_prefix", false),
+                messages != null ? messages.getString("not_in_stop", "") : "",
+                messages != null ? messages.getString("arrived", "") : "",
+                messages != null ? messages.getString("loading_app", "") : "",
+                ui != null ? ui.getString("title_main", "") : "", ui != null ? ui.getString("title_sub", "") : "",
+                ui != null ? ui.getInt("title_fade_in_ms", 0) : 0, ui != null ? ui.getInt("title_stay_ms", 0) : 0,
+                ui != null ? ui.getInt("title_fade_out_ms", 0) : 0, ui != null ? ui.getLong("teleport_delay_ticks", 0) : 0
         );
     }
 
-    private static void loadStops(FileConfiguration config, TaxiService taxiService) {
-        if (config == null || taxiService == null) return;
-        taxiService.clearTaxiStops();
+    private static void loadAccess(FileConfiguration config, TaxiMapManager manager) {
+        ConfigurationSection access = config.getConfigurationSection("access");
+        ConfigurationSection callPass = access != null ? access.getConfigurationSection("call_pass") : null;
+        ConfigurationSection npc = access != null ? access.getConfigurationSection("npc") : null;
+        ConfigurationSection messages = config.getConfigurationSection("messages");
+        manager.configureAccess(createItem(callPass, "&e택시 호출권"),
+                messages != null ? messages.getString("no_call_pass", "") : "",
+                npc != null && npc.getBoolean("enabled"), npc != null ? npc.getString("entity_type", "VILLAGER") : "VILLAGER",
+                npc != null ? npc.getString("name", "") : "");
+    }
 
-        ConfigurationSection stops = config.getConfigurationSection("stops");
-        if (stops != null) {
-            for (String key : stops.getKeys(false)) {
-                ConfigurationSection stop = stops.getConfigurationSection(key);
-                if (stop == null) {
+    private static void loadMaps(JavaPlugin plugin, FileConfiguration config, TaxiMapManager manager, Map<String, Position> positions,
+                                 Map<String, ItemStack> items, Map<String, String> names) {
+        manager.clearMaps();
+        ConfigurationSection maps = config.getConfigurationSection("maps");
+        if (maps == null) return;
+        for (String id : maps.getKeys(false)) {
+            ConfigurationSection map = maps.getConfigurationSection(id);
+            if (map == null) continue;
+            Map<String, String> navigation = new HashMap<>();
+            ConfigurationSection nav = map.getConfigurationSection("navigation");
+            if (nav != null) for (String direction : nav.getKeys(false)) navigation.put(direction, nav.getString(direction));
+            Map<Integer, ItemStack> mapItems = new HashMap<>();
+            Map<Integer, Position> mapPositions = new HashMap<>();
+            Map<Integer, String> mapNames = new HashMap<>();
+            ConfigurationSection placements = map.getConfigurationSection("placements");
+            if (placements != null) for (String stopKey : placements.getKeys(false)) {
+                int slot = placements.getInt(stopKey, -1);
+                if (!positions.containsKey(stopKey) || slot < 0 || slot >= 54) {
+                    plugin.getLogger().warning("Invalid taxi placement: " + stopKey);
                     continue;
                 }
-
-                String name =  stop.getString("name", "");
-                ConfigurationSection location = stop.getConfigurationSection("location");
-                if (location != null) {
-                    Position position = new Position(
-                            location.getString("world"),
-                            location.getDouble("x"),
-                            location.getDouble("y"),
-                            location.getDouble("z")
-                    );
-                    taxiService.registerTaxiStop(key, new TaxiStop(name, position));
-                }
+                mapItems.put(slot, items.get(stopKey));
+                mapPositions.put(slot, positions.get(stopKey));
+                mapNames.put(slot, names.get(stopKey));
             }
+            manager.registerMap(id, map.getString("title", ""), navigation, mapItems, mapPositions, mapNames);
         }
     }
 
-    private static void loadMaps(JavaPlugin plugin, FileConfiguration config, TaxiMapManager mapManager) {
-        if (config == null || mapManager == null) return;
-        mapManager.clearMaps();
-
-        ConfigurationSection mapsSection = config.getConfigurationSection("maps");
-        if (mapsSection == null) {
-            return;
-        }
-
-        for (String id : mapsSection.getKeys(false)) {
-            ConfigurationSection mapSection = mapsSection.getConfigurationSection(id);
-            if (mapSection == null) continue;
-
-            String title = mapSection.getString("title", "");
-
-            Map<String, String> navigation = new HashMap<>();
-            ConfigurationSection navSec = mapSection.getConfigurationSection("navigation");
-            if (navSec != null) {
-                for (String dir : navSec.getKeys(false)) {
-                    navigation.put(dir.toLowerCase(), navSec.getString(dir));
-                }
-            }
-
-            Map<Integer, TaxiStop> stops = new HashMap<>();
-            ConfigurationSection stopsSec = mapSection.getConfigurationSection("stops");
-            if (stopsSec != null) {
-                for (String slotKey : stopsSec.getKeys(false)) {
-                    try {
-                        int slot = Integer.parseInt(slotKey.replace("slot_", ""));
-                        ConfigurationSection stopSec = stopsSec.getConfigurationSection(slotKey);
-                        if (stopSec == null) continue;
-
-                        String stopName = stopSec.getString("name");
-                        ConfigurationSection locSec = stopSec.getConfigurationSection("location");
-                        if (locSec != null) {
-                            Position pos = new Position(
-                                    locSec.getString("world", "world"),
-                                    locSec.getDouble("x"),
-                                    locSec.getDouble("y"),
-                                    locSec.getDouble("z"),
-                                    (float) locSec.getDouble("yaw", 0.0),
-                                    (float) locSec.getDouble("pitch", 0.0)
-                            );
-                            stops.put(slot, new TaxiStop(stopName, pos));
-                        }
-                    } catch (NumberFormatException e) {
-                        plugin.getLogger().warning("Parsing slot key failed in SHARK T: " + slotKey);
-                    }
-                }
-            }
-
-            mapManager.registerMap(id, new TaxiMap(id, title, navigation, stops));
-        }
+    private static ItemStack createItem(ConfigurationSection section, String defaultName, String... lore) {
+        String materialName = section != null ? section.getString("material", "PAPER") : "PAPER";
+        Material material = Material.matchMaterial(materialName);
+        return GUIUtil.createItem(material != null ? material : Material.PAPER,
+                section != null ? section.getString("name", defaultName) : defaultName,
+                section != null ? section.getString("model_data", section.getString("model_name", "0")) : "0", lore);
     }
 }

@@ -17,10 +17,6 @@ public class CommandManager {
         register("shktown", shkTownCommand, shkTownCommand);
     }
 
-    private void register(String label, CommandExecutor executor) {
-        register(label, executor, executor instanceof TabCompleter ? (TabCompleter) executor : null);
-    }
-
     private void register(String label, CommandExecutor executor, TabCompleter tabCompleter) {
         PluginCommand command = plugin.getCommand(label);
         if (command != null) {

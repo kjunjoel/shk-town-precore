@@ -3,6 +3,7 @@ package kr.shkworld.shktown.ui.apps;
 import kr.shkworld.shktown.ui.SmartphoneScreen;
 import kr.shkworld.shktown.util.GUIUtil;
 import kr.shkworld.shktown.util.MessageUtil;
+import kr.shkworld.shktown.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -23,21 +24,18 @@ public class SmartphoneMainScreen implements SmartphoneScreen {
 
     public SmartphoneMainScreen(Player player, String title, Map<Integer, ItemStack> appItems, Map<Integer, Consumer<Player>> appActions) {
         this.appActions = appActions != null ? appActions : new HashMap<>();
-        this.inventory = Bukkit.createInventory(this, 54, MessageUtil.parse(title));
+        this.inventory = Bukkit.createInventory(this, 54, TextUtil.parse(title));
 
         initLayout(player, appItems);
     }
 
     private void initLayout(Player player, Map<Integer, ItemStack> appItems) {
         ItemStack bezel = GUIUtil.createItem(Material.GRAY_STAINED_GLASS_PANE, "&f", null);
-        ItemStack space = GUIUtil.createItem(Material.LIGHT_GRAY_STAINED_GLASS_PANE, "&f", null);
 
         for (int i = 0; i < 54; i++) {
             if (i <= 3 || (i >= 5 && i <= 8) || i == 9 || i == 17 || i == 18 || i == 26 ||
                     i == 27 || i == 35 || i == 36 || i == 44 || i >= 45) {
                 inventory.setItem(i, bezel);
-            } else {
-                inventory.setItem(i, space);
             }
         }
 

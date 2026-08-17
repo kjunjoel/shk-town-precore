@@ -14,6 +14,9 @@ public class SmartphoneManager {
     private final Map<Integer, Consumer<Player>> appActions = new HashMap<>();
 
     private String mainTitle = "";
+    private ItemStack homeButton;
+    private ItemStack navigationPreviousButton;
+    private ItemStack navigationNextButton;
     private Map<Integer, ItemStack> appItems = new HashMap<>();
 
     public SmartphoneManager(SHKTown plugin) {
@@ -25,12 +28,12 @@ public class SmartphoneManager {
         appActions.put(49, this::openMainScreen);
 
         appActions.put(30, player -> {
-            MessageUtil.send(player, plugin.getTaxiService().getConfig().loadingAppMessage(), false);
-
-            player.closeInventory();
-
-            String defaultMap =  plugin.getTaxiService().getConfig().defaultMap();
-            plugin.getTaxiMapManager().openMap(player, defaultMap);
+            if (!plugin.getTaxiMapManager().hasTaxiCallPass(player)) {
+                plugin.getTaxiMapManager().sendNoCallPassMessage(player);
+                return;
+            }
+            MessageUtil.send(player, plugin.getTaxiMapManager().getLoadingAppMessage(), false);
+            plugin.getTaxiMapManager().openMainScreen(player);
         });
 
         appActions.put(31, player -> {
@@ -42,6 +45,30 @@ public class SmartphoneManager {
 
     public void setMainTitle(String mainTitle) {
         this.mainTitle = mainTitle;
+    }
+
+    public void setHomeButton(ItemStack homeButton) {
+        this.homeButton = homeButton;
+    }
+
+    public ItemStack getHomeButton() {
+        return homeButton;
+    }
+
+    public void setNavigationPreviousButton(ItemStack navigationPreviousButton) {
+        this.navigationPreviousButton = navigationPreviousButton;
+    }
+
+    public ItemStack getNavigationPreviousButton() {
+        return navigationPreviousButton;
+    }
+
+    public void setNavigationNextButton(ItemStack navigationNextButton) {
+        this.navigationNextButton = navigationNextButton;
+    }
+
+    public ItemStack getNavigationNextButton() {
+        return navigationNextButton;
     }
 
     public void setAppItems(Map<Integer, ItemStack> appItems) {
@@ -56,4 +83,5 @@ public class SmartphoneManager {
         SmartphoneMainScreen mainScreen = new SmartphoneMainScreen(player, mainTitle, appItems, appActions);
         player.openInventory(mainScreen.getInventory());
     }
+
 }

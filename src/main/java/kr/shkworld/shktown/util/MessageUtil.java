@@ -1,22 +1,16 @@
 package kr.shkworld.shktown.util;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.title.Title;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.time.Duration;
-import java.util.regex.Pattern;
 
 public class MessageUtil {
     private static String prefix = "";
     private static String reloadSuccess = "";
     private static String noPermission = "";
-
-    private static final Pattern COLOR_PATTERN = Pattern.compile("(?i)[&§][0-9A-FK-ORX]");
 
     private MessageUtil() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated.");
@@ -28,14 +22,6 @@ public class MessageUtil {
         MessageUtil.noPermission = noPermission;
     }
 
-    public static Component parse(String text) {
-        if (text == null || text.isEmpty()) {
-            return Component.empty();
-        }
-        String finalMessage = text.replace("&", "§");
-        return LegacyComponentSerializer.legacySection().deserialize(finalMessage).decoration(TextDecoration.ITALIC, false);
-    }
-
     public static void send(CommandSender sender, String message) {
         send(sender, message, true);
     }
@@ -44,7 +30,7 @@ public class MessageUtil {
         if (sender != null && message != null) {
             String finalMessage = withPrefix ? prefix + message : message;
             finalMessage = finalMessage.replace("&", "§");
-            sender.sendMessage(parse(finalMessage));
+            sender.sendMessage(TextUtil.parse(finalMessage));
         }
     }
 
@@ -56,8 +42,8 @@ public class MessageUtil {
                                  long fadeInMs, long stayMs, long fadeOutMs) {
         if (player == null) return;
 
-        Component main = parse(mainTitle);
-        Component sub = parse(subTitle);
+        Component main = TextUtil.parse(mainTitle);
+        Component sub = TextUtil.parse(subTitle);
 
         Title.Times times = Title.Times.times(
                 Duration.ofMillis(fadeInMs),
@@ -67,17 +53,6 @@ public class MessageUtil {
 
         Title titleObject = Title.title(main, sub, times);
         player.showTitle(titleObject);
-    }
-
-    public static String serializePlainText(Component component) {
-        if (component == null) return "";
-        String plain = PlainTextComponentSerializer.plainText().serialize(component).trim();
-        return stripColor(plain).trim();
-    }
-
-    public static String stripColor(String text) {
-        if (text == null || text.isEmpty()) return "";
-        return COLOR_PATTERN.matcher(text).replaceAll("");
     }
 
     public static void sendReloadSuccess(CommandSender sender) {

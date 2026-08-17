@@ -2,10 +2,9 @@ package kr.shkworld.shktown.ui.apps.navigation;
 
 import kr.shkworld.shktown.SHKTown;
 import kr.shkworld.shktown.core.common.model.Position;
-import kr.shkworld.shktown.core.navigation.model.NavigationConfig;
-import kr.shkworld.shktown.core.navigation.model.NavigationDirection;
 import kr.shkworld.shktown.util.LocationUtil;
 import kr.shkworld.shktown.util.MessageUtil;
+import kr.shkworld.shktown.util.TextUtil;
 import kr.toxicity.hud.api.BetterHudAPI;
 import kr.toxicity.hud.api.adapter.LocationWrapper;
 import kr.toxicity.hud.api.adapter.WorldWrapper;
@@ -18,6 +17,7 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,19 +28,55 @@ public class NavigationManager {
 
     private final Map<UUID, BukkitTask> activeTasks = new HashMap<>();
     private final Map<UUID, NavigationSession> activeSessions = new HashMap<>();
+    private final Map<String, ItemStack> destinationItems = new HashMap<>();
+    private final Map<String, String> destinationNames = new HashMap<>();
+    private String title = "";
+    private String pointerId = "";
+    private int updateIntervalTicks;
+    private boolean useGlobalPrefix;
+    private String started = "", stopped = "", arrived = "", differentWorld = "";
 
     public NavigationManager(SHKTown plugin) {
         this.plugin = plugin;
     }
 
+    public void configure(String title, String pointerId, int updateIntervalTicks, boolean useGlobalPrefix,
+                          String started, String stopped, String arrived, String differentWorld) {
+        this.title = title; this.pointerId = pointerId; this.updateIntervalTicks = updateIntervalTicks;
+        this.useGlobalPrefix = useGlobalPrefix; this.started = started; this.stopped = stopped;
+        this.arrived = arrived; this.differentWorld = differentWorld;
+    }
+
+    public void clearDestinationItems() {
+        destinationItems.clear(); destinationNames.clear();
+    }
+
+    public void registerDestinationItem(String key, String name, ItemStack item) {
+        destinationNames.put(key, name); destinationItems.put(key, item);
+    }
+
+    public ItemStack getDestinationItem(String key) {
+        return destinationItems.get(key);
+    }
+
+    public String getDestinationName(String key) {
+        return destinationNames.getOrDefault(key, key);
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDifferentWorld() {
+        return differentWorld;
+    }
+
     public void startNavigation(Player player, String destinationName, Location destination) {
         UUID uuid = player.getUniqueId();
-        NavigationConfig config = plugin.getNavigationService().getConfig();
-
         stopNavigationInternal(player);
 
         if (!player.getWorld().equals(destination.getWorld())) {
-            MessageUtil.send(player, config.differentWorld(), config.useGlobalPrefix());
+            MessageUtil.send(player, differentWorld, useGlobalPrefix);
             return;
         }
 
@@ -49,7 +85,7 @@ public class NavigationManager {
         try {
             HudPlayer hudPlayer = BetterHudAPI.inst().getPlayerManager().getHudPlayer(uuid);
             if (hudPlayer != null) {
-                PointedLocation pointedLocation = getPointedLocation(destination, config);
+                PointedLocation pointedLocation = getPointedLocation(destination, pointerId);
 
                 hudPlayer.pointers().add(pointedLocation);
             }
@@ -57,8 +93,8 @@ public class NavigationManager {
             plugin.getLogger().warning("BetterHUD Pointer registration failed: " + e.getMessage());
         }
 
-        String startMessage = config.started().replace("{destination}", destinationName);
-        MessageUtil.send(player, startMessage, config.useGlobalPrefix());
+        String startMessage = started.replace("{destination}", destinationName);
+        MessageUtil.send(player, startMessage, useGlobalPrefix);
 
         BukkitTask task = new BukkitRunnable() {
             @Override
@@ -76,7 +112,7 @@ public class NavigationManager {
 
                 double distance = currentLocation.distance(destination);
 
-                if (distance <= config.arrivalRadius()) {
+                if (plugin.getNavigationService().isArrived(LocationUtil.toPosition(currentLocation), LocationUtil.toPosition(destination))) {
                     stopNavigation(player, true);
                     return;
                 }
@@ -87,16 +123,16 @@ public class NavigationManager {
 
                 int distanceInt = (int) Math.round(distance);
                 String formattedActionBar = String.format("&b%s &f| %dm &f| &a%s", destinationName, distanceInt, dir.getText());
-                player.sendActionBar(MessageUtil.parse(formattedActionBar));
+                player.sendActionBar(TextUtil.parse(formattedActionBar));
 
                 spawnDestinationParticles(player, destination);
             }
-        }.runTaskTimer(plugin, 0L, config.updateIntervalTicks());
+        }.runTaskTimer(plugin, 0L, Math.max(1, updateIntervalTicks));
 
         activeTasks.put(uuid, task);
     }
 
-    private static PointedLocation getPointedLocation(Location destination, NavigationConfig config) {
+    private static PointedLocation getPointedLocation(Location destination, String pointerId) {
         LocationWrapper locationWrapper = new LocationWrapper(
                 new WorldWrapper(destination.getWorld().getName()),
                 destination.getX(),
@@ -107,8 +143,8 @@ public class NavigationManager {
 
         return new PointedLocation(
                 PointedLocationSource.INTERNAL,
-                config.betterhudPointerId(),
-                config.betterhudPointerId(),
+                pointerId,
+                pointerId,
                 locationWrapper
         );
     }
@@ -123,21 +159,18 @@ public class NavigationManager {
             return;
         }
 
-        NavigationConfig config = plugin.getNavigationService().getConfig();
-
         if (isArrived) {
-            String arrivedMessage = config.arrived().replace("{destination}", session.name());
+            String arrivedMessage = arrived.replace("{destination}", session.name());
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
-            MessageUtil.send(player, arrivedMessage, config.useGlobalPrefix());
+            MessageUtil.send(player, arrivedMessage, useGlobalPrefix);
             MessageUtil.sendTitle(player, "§a✔ 목적지 도착!", "§f" + session.name() + "에 도착했습니다.");
         } else {
-            MessageUtil.send(player, config.stopped(), config.useGlobalPrefix());
+            MessageUtil.send(player, stopped, useGlobalPrefix);
         }
     }
 
     private boolean stopNavigationInternal(Player player) {
         UUID uuid = player.getUniqueId();
-        NavigationConfig config = plugin.getNavigationService().getConfig();
 
         BukkitTask task = activeTasks.remove(uuid);
         boolean hadTask = (task != null);
@@ -151,14 +184,14 @@ public class NavigationManager {
         try {
             HudPlayer hudPlayer = BetterHudAPI.inst().getPlayerManager().getHudPlayer(uuid);
             if (hudPlayer != null) {
-                hudPlayer.pointers().removeIf(pt -> config.betterhudPointerId().equalsIgnoreCase(pt.name()));
+                hudPlayer.pointers().removeIf(pt -> pointerId.equalsIgnoreCase(pt.name()));
             }
         } catch (Exception e) {
             plugin.getLogger().warning("BetterHUD Pointer removal failed for " + player.getName() + ": " + e.getMessage());
         }
 
         if (player.isOnline()) {
-            player.sendActionBar(MessageUtil.parse(""));
+            player.sendActionBar(TextUtil.parse(""));
         }
 
         return hadTask;

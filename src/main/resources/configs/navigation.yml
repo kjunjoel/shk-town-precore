@@ -13,7 +13,9 @@ messages:
 
 destinations:
   apartments_a_north:
+    material: COMPASS
     name: "A아파트 북쪽"
+    model_name: 0
     location:
       world: "other"
       x: -1572.5
@@ -21,7 +23,9 @@ destinations:
       z: 400.5
 
   apartments_a_south:
+    material: COMPASS
     name: "A아파트 남쪽"
+    model_name: 0
     location:
       world: "other"
       x: -1571.5
@@ -29,7 +33,9 @@ destinations:
       z: 120.5
 
   apartments_b:
+    material: COMPASS
     name: "B아파트"
+    model_name: 0
     location:
       world: "other"
       x: -1286.5
@@ -37,7 +43,9 @@ destinations:
       z: 151.5
 
   arts_association:
+    material: COMPASS
     name: "예술협회"
+    model_name: 0
     location:
       world: "other"
       x: -1572.5
@@ -46,7 +54,9 @@ destinations:
       yaw: 90.0
 
   assembly:
+    material: COMPASS
     name: "의회"
+    model_name: 0
     location:
       world: "other"
       x: -917.5
@@ -54,7 +64,9 @@ destinations:
       z: 429.5
 
   central_shopping_street:
+    material: COMPASS
     name: "중앙 상가거리"
+    model_name: 0
     location:
       world: "other"
       x: -1433.5
@@ -62,7 +74,9 @@ destinations:
       z: 256.5
 
   central_square:
+    material: COMPASS
     name: "중앙 광장"
+    model_name: 0
     location:
       world: "other"
       x: -1447.5
@@ -70,7 +84,9 @@ destinations:
       z: -32.5
 
   city_hall:
+    material: COMPASS
     name: "시청"
+    model_name: 0
     location:
       world: "other"
       x: -1444.5
@@ -78,7 +94,9 @@ destinations:
       z: -202.5
 
   court:
+    material: COMPASS
     name: "법원"
+    model_name: 0
     location:
       world: "other"
       x: -917.5
@@ -86,7 +104,9 @@ destinations:
       z: 650.5
 
   fire_agency:
+    material: COMPASS
     name: "소방청"
+    model_name: 0
     location:
       world: "other"
       x: -1286.5
@@ -94,7 +114,9 @@ destinations:
       z: 680.5
 
   hall_of_fame:
+    material: COMPASS
     name: "명예의 전당"
+    model_name: 0
     location:
       world: "other"
       x: -1607.5
@@ -102,7 +124,9 @@ destinations:
       z: 800.5
 
   harbor:
+    material: COMPASS
     name: "항만"
+    model_name: 0
     location:
       world: "other"
       x: -2081.5
@@ -110,7 +134,9 @@ destinations:
       z: -833.5
 
   high_school:
+    material: COMPASS
     name: "고등학교"
+    model_name: 0
     location:
       world: "other"
       x: -1683.5
@@ -118,7 +144,9 @@ destinations:
       z: 271.5
 
   hospital:
+    material: COMPASS
     name: "병원"
+    model_name: 0
     location:
       world: "other"
       x: -1091.5
@@ -126,7 +154,9 @@ destinations:
       z: 686.5
 
   north_shopping_street:
+    material: COMPASS
     name: "북쪽 상가거리"
+    model_name: 0
     location:
       world: "other"
       x: -1634.5
@@ -134,7 +164,9 @@ destinations:
       z: -593.5
 
   police_office:
+    material: COMPASS
     name: "경찰청"
+    model_name: 0
     location:
       world: "other"
       x: -1057.5
@@ -142,7 +174,9 @@ destinations:
       z: 449.5
 
   prosecutors_office:
+    material: COMPASS
     name: "검찰청"
+    model_name: 0
     location:
       world: "other"
       x: -1218.5
@@ -150,7 +184,9 @@ destinations:
       z: 463.5
 
   sbc:
+    material: COMPASS
     name: "SBC"
+    model_name: 0
     location:
       world: "other"
       x: -1322.5
@@ -158,7 +194,9 @@ destinations:
       z: 710.5
 
   sostco:
+    material: COMPASS
     name: "소스트코"
+    model_name: 0
     location:
       world: "other"
       x: -901.5
@@ -166,7 +204,9 @@ destinations:
       z: 295.5
 
   sports_complex:
+    material: COMPASS
     name: "종합경기장"
+    model_name: 0
     location:
       world: "other"
       x: -1006.5
@@ -174,7 +214,9 @@ destinations:
       z: -201.5
 
   townhouse_complex:
+    material: COMPASS
     name: "빌라 단지"
+    model_name: 0
     location:
       world: "other"
       x: -1679.5
@@ -182,7 +224,9 @@ destinations:
       z: 474.5
 
   train_station:
+    material: COMPASS
     name: "기차역"
+    model_name: 0
     location:
       world: "other"
       x: -1296.5
@@ -190,7 +234,9 @@ destinations:
       z: -611.5
 
   university:
+    material: COMPASS
     name: "대학교"
+    model_name: 0
     location:
       world: "other"
       x: -1695.5
@@ -198,7 +244,9 @@ destinations:
       z: -174.5
 
   wedding_hall:
+    material: COMPASS
     name: "결혼식장"
+    model_name: 0
     location:
       world: "other"
       x: -1201.5

@@ -2,12 +2,8 @@ package kr.shkworld.shktown;
 
 import kr.shkworld.shktown.command.CommandManager;
 import kr.shkworld.shktown.config.ConfigManager;
-import kr.shkworld.shktown.core.AppInitializer;
-import kr.shkworld.shktown.core.ServiceRegistry;
 import kr.shkworld.shktown.core.navigation.service.NavigationService;
-import kr.shkworld.shktown.core.navigation.service.impl.NavigationServiceImpl;
 import kr.shkworld.shktown.core.taxi.service.TaxiService;
-import kr.shkworld.shktown.core.taxi.service.impl.TaxiServiceImpl;
 import kr.shkworld.shktown.listener.EventManager;
 import kr.shkworld.shktown.ui.apps.SmartphoneManager;
 import kr.shkworld.shktown.ui.apps.navigation.NavigationManager;
@@ -16,7 +12,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class SHKTown extends JavaPlugin {
     private ConfigManager configManager;
-    private ServiceRegistry serviceRegistry;
 
     private SmartphoneManager smartphoneManager;
     private TaxiService taxiService;
@@ -28,16 +23,14 @@ public class SHKTown extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
 
-        this.taxiService = new TaxiServiceImpl();
-        this.navigationService = new NavigationServiceImpl();
+        this.taxiService = new TaxiService();
+        this.navigationService = new NavigationService();
 
         this.smartphoneManager = new SmartphoneManager(this);
         this.taxiMapManager = new TaxiMapManager(this);
         this.navigationManager = new NavigationManager(this);
 
         this.configManager = new ConfigManager(this);
-        this.serviceRegistry = AppInitializer.initServiceRegistry(this);
-
         reload();
 
         new EventManager(this).registerEvents();
@@ -52,7 +45,7 @@ public class SHKTown extends JavaPlugin {
     }
 
     public void reload() {
-        configManager.loadConfigs(serviceRegistry);
+        configManager.loadConfigs();
     }
 
     public TaxiService getTaxiService() {

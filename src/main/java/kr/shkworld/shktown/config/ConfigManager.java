@@ -1,13 +1,9 @@
 package kr.shkworld.shktown.config;
 
-import kr.shkworld.shktown.core.ServiceRegistry;
-import kr.shkworld.shktown.core.navigation.service.NavigationService;
-import kr.shkworld.shktown.core.taxi.service.TaxiService;
-import kr.shkworld.shktown.ui.apps.SmartphoneManager;
-import kr.shkworld.shktown.ui.apps.taxi.TaxiMapManager;
+import kr.shkworld.shktown.SHKTown;
+import kr.shkworld.shktown.util.MessageUtil;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.InputStream;
@@ -17,14 +13,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ConfigManager {
-    private final JavaPlugin plugin;
+    private final SHKTown plugin;
     private final Map<String, FileConfiguration> configs = new HashMap<>();
 
-    public ConfigManager(JavaPlugin plugin) {
+    public ConfigManager(SHKTown plugin) {
         this.plugin = plugin;
     }
 
-    public void loadConfigs(ServiceRegistry serviceRegistry) {
+    public void loadConfigs() {
         configs.clear();
 
         loadConfig("global", "config.yml");
@@ -33,23 +29,33 @@ public class ConfigManager {
         loadConfig("taxi", "configs/taxi.yml");
         loadConfig("navigation", "configs/navigation.yml");
 
-        GlobalConfigLoader.loadGlobalConfig(getConfig("global"));
+        loadGlobalConfig(getConfig("global"));
 
         SmartphoneConfigLoader.loadSmartphoneConfig(
                 getConfig("smartphone"),
-                serviceRegistry.getService(SmartphoneManager.class)
+                plugin.getSmartphoneManager()
         );
 
         TaxiConfigLoader.loadTaxiConfig(
                 plugin,
                 getConfig("taxi"),
-                serviceRegistry.getService(TaxiService.class),
-                serviceRegistry.getService(TaxiMapManager.class)
+                plugin.getTaxiService(),
+                plugin.getTaxiMapManager()
         );
 
         NavigationConfigLoader.loadNavigationConfig(
                 getConfig("navigation"),
-                serviceRegistry.getService(NavigationService.class)
+                plugin.getNavigationService(),
+                plugin.getNavigationManager()
+        );
+    }
+
+    private static void loadGlobalConfig(FileConfiguration config) {
+        if (config == null) return;
+        MessageUtil.initGlobalConfig(
+                config.getString("prefix", ""),
+                config.getString("reload_success", ""),
+                config.getString("no_permission", "")
         );
     }
 
