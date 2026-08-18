@@ -1,7 +1,7 @@
 package kr.shkworld.shktown.ui.apps.taxi;
 
 import kr.shkworld.shktown.SHKTown;
-import kr.shkworld.shktown.core.common.model.Position;
+import kr.shkworld.shktown.core.navigation.model.Position;
 import kr.shkworld.shktown.util.MessageUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;

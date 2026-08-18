@@ -1,4 +1,4 @@
-package kr.shkworld.shktown.core.common.model;
+package kr.shkworld.shktown.core.navigation.model;
 
 public record Position(String world, double x, double y, double z, float yaw, float pitch) {
     public Position(String world, double x, double y, double z) {

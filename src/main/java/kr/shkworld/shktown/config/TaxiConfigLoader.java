@@ -1,6 +1,6 @@
 package kr.shkworld.shktown.config;
 
-import kr.shkworld.shktown.core.common.model.Position;
+import kr.shkworld.shktown.core.navigation.model.Position;
 import kr.shkworld.shktown.ui.apps.taxi.TaxiMapManager;
 import kr.shkworld.shktown.util.GUIUtil;
 import org.bukkit.Material;

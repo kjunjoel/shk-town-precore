@@ -1,14 +1,15 @@
 package kr.shkworld.shktown.config;
 
 import kr.shkworld.shktown.ui.apps.SmartphoneManager;
+import kr.shkworld.shktown.ui.apps.SmartphoneApp;
 import kr.shkworld.shktown.util.GUIUtil;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SmartphoneConfigLoader {
     private SmartphoneConfigLoader() {}
@@ -32,19 +33,23 @@ public class SmartphoneConfigLoader {
             if (next != null) smartphoneManager.setNavigationNextButton(createItem(next));
         }
 
-        Map<Integer, ItemStack> appItems = new HashMap<>();
+        String fixedLeftAppId = config.getString("fixed_apps.left", "settings");
+        String fixedRightAppId = config.getString("fixed_apps.right", "talk");
+        smartphoneManager.setFixedAppIds(fixedLeftAppId, fixedRightAppId);
+
+        List<SmartphoneApp> apps = new ArrayList<>();
         ConfigurationSection itemsSection = config.getConfigurationSection("items");
         if (itemsSection != null) {
+            int defaultOrder = 0;
             for (String key : itemsSection.getKeys(false)) {
                 ConfigurationSection itemSection = itemsSection.getConfigurationSection(key);
                 if (itemSection == null) continue;
 
-                int slot = itemSection.getInt("slot", 0);
-                ItemStack itemStack = createItem(itemSection);
-                appItems.put(slot, itemStack);
+                int order = itemSection.getInt("order", defaultOrder++);
+                apps.add(new SmartphoneApp(key, order, createItem(itemSection)));
             }
         }
-        smartphoneManager.setAppItems(appItems);
+        smartphoneManager.setApps(apps);
     }
 
     private static ItemStack createItem(ConfigurationSection section) {

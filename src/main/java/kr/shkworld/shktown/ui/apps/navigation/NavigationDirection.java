@@ -1,6 +1,6 @@
 package kr.shkworld.shktown.ui.apps.navigation;
 
-import kr.shkworld.shktown.core.common.model.Position;
+import kr.shkworld.shktown.core.navigation.model.Position;
 
 public enum NavigationDirection {
     UP("위로 이동 ⬆"),

@@ -1,7 +1,7 @@
 package kr.shkworld.shktown.ui.apps.navigation;
 
 import kr.shkworld.shktown.SHKTown;
-import kr.shkworld.shktown.core.common.model.Position;
+import kr.shkworld.shktown.core.navigation.model.Position;
 import kr.shkworld.shktown.util.LocationUtil;
 import kr.shkworld.shktown.util.MessageUtil;
 import kr.shkworld.shktown.util.TextUtil;

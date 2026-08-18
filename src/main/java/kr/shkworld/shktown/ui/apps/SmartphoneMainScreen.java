@@ -14,55 +14,85 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 
 public class SmartphoneMainScreen implements SmartphoneScreen {
-    private final Inventory inventory;
-    private final Map<Integer, Consumer<Player>> appActions;
+    private static final int[] APP_SLOTS = {3, 4, 5, 12, 13, 14, 21, 22, 23, 30, 31, 32, 39, 40, 41};
+    private static final int PREVIOUS_PAGE_SLOT = 47;
+    private static final int FIXED_LEFT_SLOT = 48;
+    private static final int HOME_SLOT = 49;
+    private static final int FIXED_RIGHT_SLOT = 50;
+    private static final int NEXT_PAGE_SLOT = 51;
 
-    public SmartphoneMainScreen(Player player, String title, ItemStack homeButton, Map<Integer, ItemStack> appItems, Map<Integer, Consumer<Player>> appActions) {
-        this.appActions = appActions != null ? appActions : new HashMap<>();
+    private final SmartphoneManager smartphoneManager;
+    private final Inventory inventory;
+    private final Map<Integer, String> appIdsBySlot = new HashMap<>();
+    private final int page;
+
+    public SmartphoneMainScreen(SmartphoneManager smartphoneManager, String title, int page) {
+        this.smartphoneManager = smartphoneManager;
+        this.page = Math.max(0, page);
         this.inventory = Bukkit.createInventory(this, 54, TextUtil.parse(title));
 
-        initLayout(player, homeButton, appItems);
+        initLayout();
     }
 
-    private void initLayout(Player player, ItemStack homeButton, Map<Integer, ItemStack> appItems) {
-        ItemStack bezel = GUIUtil.createItem(Material.GRAY_STAINED_GLASS_PANE, "&f", null);
-
-        for (int i = 0; i < 54; i++) {
-            if (i <= 3 || (i >= 5 && i <= 8) || i == 9 || i == 17 || i == 18 || i == 26 ||
-                    i == 27 || i == 35 || i == 36 || i == 44 || i >= 45) {
-                inventory.setItem(i, bezel);
-            }
+    private void initLayout() {
+        List<SmartphoneApp> apps = smartphoneManager.getApps();
+        int startIndex = page * APP_SLOTS.length;
+        for (int index = 0; index < APP_SLOTS.length && startIndex + index < apps.size(); index++) {
+            SmartphoneApp app = apps.get(startIndex + index);
+            inventory.setItem(APP_SLOTS[index], app.item().clone());
+            appIdsBySlot.put(APP_SLOTS[index], app.id());
         }
 
-        ItemStack profileCard = GUIUtil.createPlayerHead(
-                player,
-                "§6" + player.getName() + " §f님의 스마트폰",
-                "§7--------------------",
-                "§a 소속 직급 §f: 시민",
-                "§6 보유 현금 §f: 0 원",
-                "§b 보유 캐시 §f: 0",
-                "§7--------------------"
-        );
-        inventory.setItem(4, profileCard);
-
-        if (appItems != null) {
-            appItems.forEach(inventory::setItem);
-        }
-
-        inventory.setItem(49, homeButton != null
-                ? homeButton.clone()
+        setFixedApp(FIXED_LEFT_SLOT, smartphoneManager.getFixedLeftAppId(), apps);
+        setFixedApp(FIXED_RIGHT_SLOT, smartphoneManager.getFixedRightAppId(), apps);
+        inventory.setItem(HOME_SLOT, smartphoneManager.getHomeButton() != null
+                ? smartphoneManager.getHomeButton().clone()
                 : GUIUtil.createItem(Material.COMPASS, "&cHOME", null));
+
+        if (page > 0 && smartphoneManager.getNavigationPreviousButton() != null) {
+            inventory.setItem(PREVIOUS_PAGE_SLOT, smartphoneManager.getNavigationPreviousButton().clone());
+        }
+        if (startIndex + APP_SLOTS.length < apps.size() && smartphoneManager.getNavigationNextButton() != null) {
+            inventory.setItem(NEXT_PAGE_SLOT, smartphoneManager.getNavigationNextButton().clone());
+        }
+    }
+
+    private void setFixedApp(int slot, String appId, List<SmartphoneApp> apps) {
+        apps.stream()
+                .filter(app -> app.id().equals(appId))
+                .findFirst()
+                .ifPresent(app -> {
+                    inventory.setItem(slot, app.item().clone());
+                    appIdsBySlot.put(slot, app.id());
+                });
     }
 
     @Override
     public void handleSlotClick(Player player, int slot) {
-        if (appActions.containsKey(slot)) {
-            appActions.get(slot).accept(player);
+        if (slot == PREVIOUS_PAGE_SLOT && page > 0) {
+            smartphoneManager.openMainScreen(player, page - 1);
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
+            return;
+        }
+        if (slot == NEXT_PAGE_SLOT && (page + 1) * APP_SLOTS.length < smartphoneManager.getApps().size()) {
+            smartphoneManager.openMainScreen(player, page + 1);
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
+            return;
+        }
+        if (slot == HOME_SLOT) {
+            smartphoneManager.openMainScreen(player);
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
+            return;
+        }
+
+        String appId = appIdsBySlot.get(slot);
+        if (appId != null && smartphoneManager.getAppAction(appId) != null) {
+            smartphoneManager.getAppAction(appId).accept(player);
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
             return;
         }

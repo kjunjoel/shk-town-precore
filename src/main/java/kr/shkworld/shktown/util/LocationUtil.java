@@ -1,6 +1,6 @@
 package kr.shkworld.shktown.util;
 
-import kr.shkworld.shktown.core.common.model.Position;
+import kr.shkworld.shktown.core.navigation.model.Position;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;

@@ -1,7 +1,7 @@
 package kr.shkworld.shktown.ui.apps.navigation;
 
 import kr.shkworld.shktown.SHKTown;
-import kr.shkworld.shktown.core.common.model.Position;
+import kr.shkworld.shktown.core.navigation.model.Position;
 import kr.shkworld.shktown.core.navigation.service.NavigationService;
 import kr.shkworld.shktown.ui.AbstractSmartphoneScreen;
 import kr.shkworld.shktown.util.GUIUtil;
@@ -48,7 +48,7 @@ public class NavigationScreen extends AbstractSmartphoneScreen {
         ItemStack bezel = GUIUtil.createItem(Material.LIGHT_BLUE_STAINED_GLASS_PANE, "&f", null);
         for (int slot = 0; slot < 54; slot++) {
             if (slot <= 3 || (slot >= 5 && slot <= 8) || slot == 9 || slot == 17 || slot == 18 || slot == 26
-                    || slot == 27 || slot == 35 || slot == 36 || slot >= 45) {
+                    || slot == 27 || slot == 35 || slot == 36 || slot >= 44) {
                 inventory.setItem(slot, bezel);
             }
         }
@@ -71,7 +71,7 @@ public class NavigationScreen extends AbstractSmartphoneScreen {
         int endIndex = Math.min(startIndex + maxItemPerPage, filteredList.size());
         int totalPages = Math.max(1, (int) Math.ceil((double) filteredList.size() / maxItemPerPage));
 
-        ItemStack status = GUIUtil.createItem(Material.PAPER, "&b&lGPS 상태", null,
+        ItemStack status = GUIUtil.createItem(Material.PAPER, "&bGPS 상태", null,
                 "&f내비게이션 상태: " + (isNavigating ? ("&a" + destinationName + "(으)로 안내 중") : "&c대기 중"),
                 "&f페이지: &b" + (currentPage + 1) + "/" + totalPages,
                 "&f현재 정렬 기준: &e" + sortType.getDisplayName(),

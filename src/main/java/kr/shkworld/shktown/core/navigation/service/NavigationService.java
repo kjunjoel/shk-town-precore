@@ -1,6 +1,6 @@
 package kr.shkworld.shktown.core.navigation.service;
 
-import kr.shkworld.shktown.core.common.model.Position;
+import kr.shkworld.shktown.core.navigation.model.Position;
 
 import java.util.HashMap;
 import java.util.Map;
