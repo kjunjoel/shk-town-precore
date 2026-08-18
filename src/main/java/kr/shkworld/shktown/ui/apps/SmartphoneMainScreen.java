@@ -19,12 +19,12 @@ import java.util.Map;
 
 
 public class SmartphoneMainScreen implements SmartphoneScreen {
-    private static final int[] APP_SLOTS = {3, 4, 5, 12, 13, 14, 21, 22, 23, 30, 31, 32, 39, 40, 41};
-    private static final int PREVIOUS_PAGE_SLOT = 47;
+    private static final int[] APP_SLOTS = {3, 4, 5, 12, 13, 14, 21, 22, 23, 30, 31, 32};
+    private static final int PREVIOUS_PAGE_SLOT = 28;
+    private static final int NEXT_PAGE_SLOT = 34;
     private static final int FIXED_LEFT_SLOT = 48;
     private static final int HOME_SLOT = 49;
     private static final int FIXED_RIGHT_SLOT = 50;
-    private static final int NEXT_PAGE_SLOT = 51;
 
     private final SmartphoneManager smartphoneManager;
     private final Inventory inventory;
